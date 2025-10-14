@@ -8,12 +8,28 @@ CONFIG += c++17
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+INCLUDEPATH += model
+INCLUDEPATH += view
+INCLUDEPATH += controller
+
+
 SOURCES += \
+    controller/graphcontroller.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    model/edge.cpp \
+    model/graph.cpp \
+    model/node.cpp \
+    view/graphview.cpp
 
 HEADERS += \
-    mainwindow.h
+    controller/graphcontroller.h \
+    mainwindow.h \
+    model/edge.h \
+    model/graph.h \
+    model/node.h \
+    view/graphview.h \
+    view/stylesheet.h
 
 FORMS += \
     mainwindow.ui
