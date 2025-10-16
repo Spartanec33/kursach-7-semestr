@@ -11,6 +11,7 @@ class GraphView : public QGraphicsView
     Q_OBJECT
 public:
     GraphView(QWidget* parent = nullptr);
+
     int getSelectedNode() {return selectedNodeId;}
     void setGraph(const Graph* graph); // Выбрать модель графа
     void drawGraph(); //Отрисовать граф
@@ -27,11 +28,18 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;//Отпустили кнопку мыши
 
 private:
-    int findNodeAt(QPointF position); //Поиск узла в точке
+    QLineF applyEdgeOffset(QPointF start, QPointF end); //Сместить ребро
+    void drawEdges();    // Отрисовать ребра
+    void drawArrow(QLineF line);// Отрисовать стрелку
+    void drawNodeText(QPointF center, QString name); // Отрисовать текст в узле
+    void drawNodes();    // Отрисовать узлы
+    int findNodeAt(QPointF position); // Поиск узла в точке
+    int findEdgeAt(QPointF position); // Поиск ребра в точке
 
     //Состояния view
-    int draggedNodeId = -1;
-    int selectedNodeId = -1;
+    int draggedNodeId = -1; //какой узел тянем
+    int selectedNodeId = -1; // выб
+    int selectedEdgeId = -1;
 
     const Graph* graph = nullptr;//выбранная модель
     QGraphicsScene* scene;

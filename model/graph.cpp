@@ -4,6 +4,7 @@
 void Graph::addNode(NodeData data)
 {
     int id = nextNodeId++;
+    data.name = QString("Node %1").arg(id);
     nodes[id] = make_unique<Node>(id, data);
 }
 
@@ -33,8 +34,21 @@ bool Graph::removeNode(int nodeId)
 //Добавить ребро
 void Graph::addEdge(EdgeData data, int sourceId, int targetId)
 {
-    if (nodes.find(sourceId) != nodes.end() && nodes.find(targetId) != nodes.end())
+    if (sourceId == targetId)
+        return;
+
+    auto sourceNode = nodes.find(sourceId);
+    auto targetNode = nodes.find(targetId);
+    if (sourceNode != nodes.end() and targetNode != nodes.end())
     {
+        // Проверка на существующее ребро
+        for (const auto& [id, edge] : edges)
+        {
+            if ((edge->GetSourceId() == sourceId && edge->GetTargetId() == targetId)) //можно в обе стороны связь
+                //or (edge->GetSourceId() == targetId && edge->GetTargetId() == sourceId)) //только в одну сторону связь
+                return;
+        }
+
         int id = nextEdgeId++;
         edges[id] = make_unique<Edge>(data, id, sourceId, targetId);
     }

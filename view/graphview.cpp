@@ -17,14 +17,59 @@ void GraphView::setGraph(const Graph* g)
     drawGraph();
 }
 
-//Отрисовать граф
-void GraphView::drawGraph()
+//Сместить ребро
+QLineF GraphView::applyEdgeOffset(QPointF start, QPointF end)
 {
-    scene->clear();
+    QLineF line(start, end);
 
+    // Вычисляем перпендикулярный вектор
+    QPointF direction = end - start;
+    QPointF perpendicular(-direction.y(), direction.x()); // Поворот на 90 градусов
+
+    // Нормализуем перпендикуляр
+    double length = sqrt(perpendicular.x() * perpendicular.x() + perpendicular.y() * perpendicular.y());
+    if (length > 0)
+        perpendicular /= length;
+
+    // Смещаем линию
+    line.translate(perpendicular * edgeOffset);
+
+    return line;
+}
+
+// Отрисовать стрелку
+void GraphView::drawArrow(QLineF line)
+{
+    // Вычисляем угол линии
+    double angle = atan2(line.dy(), -line.dx());
+
+    // Точка для основания стрелки (посередине линии)
+    QPointF arrowBase = line.pointAt(0.5);
+
+    // Создаем точки для стрелки
+    QPointF arrowP1 = arrowBase + QPointF(
+                sin(angle + M_PI / 3) * arrowSize,
+                cos(angle + M_PI / 3) * arrowSize
+                );
+
+    QPointF arrowP2 = arrowBase + QPointF(
+               sin(angle + M_PI - M_PI / 3) * arrowSize,
+                cos(angle + M_PI - M_PI / 3) * arrowSize
+                );
+
+    // Создаем полигон для стрелки
+    QPolygonF arrowHead;
+    arrowHead << arrowBase << arrowP1 << arrowP2;
+
+    // Добавляем стрелку на сцену
+    scene->addPolygon(arrowHead,QPen(edgeColor, edgeFat), QBrush(arrowColor));
+}
+
+// Отрисовать ребра
+void GraphView::drawEdges()
+{
     if (!graph) return;
 
-    // Отрисовать ребра
     const auto& edges = graph->getEdges();
     for (const auto& [id, edge] : edges)
     {
@@ -33,28 +78,46 @@ void GraphView::drawGraph()
 
         QPointF sourcePos = sourceNode->GetData().position;
         QPointF targetPos = targetNode->GetData().position;
-        scene->addLine(QLineF(sourcePos, targetPos), QPen(edgeColor, edgeFat));
+        QLineF line = applyEdgeOffset(sourcePos, targetPos);
+        scene->addLine(line, QPen(edgeColor, edgeFat));
+        drawArrow(line);
     }
+}
 
-    // Отрисовать узлы
+
+
+// Отрисовать текст в узле
+void GraphView::drawNodeText(QPointF center, QString name)
+{
+    auto* text = scene->addText(name);
+    QRectF textRect = text->boundingRect();
+    text->setPos(center.x() - textRect.width()/2,
+                 center.y() - textRect.height()/2);
+    text->setDefaultTextColor(nodeTextColor);
+}
+
+// Отрисовать узлы
+void GraphView::drawNodes()
+{
     const auto& nodes = graph->getNodes();
     for (const auto& [id, node] : nodes)
     {
         QPointF center = node->GetData().position;
-
-        // Цвет в зависимости от выделенности
-        QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor) : QBrush(nodeColor);
-
-        auto* ellipse = scene->addEllipse(center.x() - nodeSize, center.y() - nodeSize, nodeSize*2, nodeSize*2,
-                                         QPen(borderColor, borderFat), brush);
-
-        // Отрисовать текст в узле
-        auto* text = scene->addText(node->GetData().name);
-        QRectF textRect = text->boundingRect();
-        text->setPos(center.x() - textRect.width()/2,
-                     center.y() - textRect.height()/2);
-        text->setDefaultTextColor(nodeTextColor);
+        QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor) : QBrush(nodeColor); // Цвет в зависимости от выделенности
+        scene->addEllipse(center.x() - nodeSize, center.y() - nodeSize, nodeSize*2, nodeSize*2, QPen(borderColor, borderFat), brush);
+        drawNodeText(center, node->GetData().name);
     }
+}
+
+//Отрисовать граф
+void GraphView::drawGraph()
+{
+    scene->clear();
+
+    if (!graph) return;
+
+    drawEdges();
+    drawNodes();
 }
 
 //Поиск узла в точке

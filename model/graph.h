@@ -21,7 +21,6 @@ public:
     bool removeNode(int nodeId); //Удалить узел
     void addEdge(EdgeData data, int sourceId, int targetId); //Добавить ребро
     bool removeEdge(int edgeId); //Удалить ребро
-    int getNextNodeId(){return nextNodeId;} // Получить следующий номер узла
     const auto& getNodes() const { return nodes; } // Получить узлы
     const auto& getEdges() const { return edges; } // Получить ребра
 };
