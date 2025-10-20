@@ -14,7 +14,7 @@ public:
 
 public slots:
     void addNodeAt(const QPointF& position); // Добавить узел в точку
-    void addEdge(int fromId, int toId); // Добавить ребро между узлами
+    void addEdge(int fromId, int toId);      // Добавить ребро между узлами
     void removeSelectedNode(); // Удалить выбранный узел
     void removeSelectedEdge(); // Удалить выбранное ребро
 

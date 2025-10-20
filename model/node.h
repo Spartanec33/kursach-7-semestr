@@ -8,23 +8,23 @@
 struct NodeData
 {
     QString name; // Название узла
-    QPointF position; // Позиция узла
 };
 
 class Node
 {
 public:
-    Node(int nodeId, NodeData d) : id(nodeId), data(d) {}
+    Node(int nodeId, NodeData d, QPointF p) : id(nodeId), data(d), position(p) {}
 
-    int GetId() { return id; } // Получить Id
-    const NodeData& GetData() { return data; } // Получить данные
-    void SetData(NodeData d) { data = d; } // Установить данные
-    QPointF GetPosition() { return data.position; } // Получить позицию
-    void SetPosition(QPointF pos) { data.position = pos; } // Установить позицию
+    int getId() { return id; }                 // Получить Id
+    const NodeData& getData() { return data; } // Получить данные
+    void setData(NodeData d) { data = d; }     // Установить данные
+    QPointF getPosition() { return position; }        // Получить позицию
+    void setPosition(QPointF pos) { position = pos; } // Установить позицию
 
 private:
-    NodeData data;
-    const int id;
+    NodeData data;    //Данные узла
+    QPointF position; // Позиция узла
+    const int id;     //Id узла
 };
 
 #endif // NODE_H

@@ -38,7 +38,7 @@ QLineF GraphView::applyEdgeOffset(QPointF start, QPointF end)
 }
 
 // Отрисовать стрелку
-void GraphView::drawArrow(QLineF line)
+void GraphView::drawArrow(QLineF line, bool isSelected)
 {
     // Вычисляем угол линии
     double angle = atan2(line.dy(), -line.dx());
@@ -61,8 +61,9 @@ void GraphView::drawArrow(QLineF line)
     QPolygonF arrowHead;
     arrowHead << arrowBase << arrowP1 << arrowP2;
 
+    QBrush brush = (isSelected) ? QBrush(selectedArrowColor) : QBrush(arrowColor); // Цвет в зависимости от выделенности
     // Добавляем стрелку на сцену
-    scene->addPolygon(arrowHead,QPen(edgeColor, edgeFat), QBrush(arrowColor));
+    scene->addPolygon(arrowHead,QPen(edgeColor, edgeFat), brush);
 }
 
 // Отрисовать ребра
@@ -73,14 +74,14 @@ void GraphView::drawEdges()
     const auto& edges = graph->getEdges();
     for (const auto& [id, edge] : edges)
     {
-        auto sourceNode = graph->getNodes().at(edge->GetSourceId()).get();
-        auto targetNode = graph->getNodes().at(edge->GetTargetId()).get();
+        auto sourceNode = graph->getNodes().at(edge->getSourceId()).get();
+        auto targetNode = graph->getNodes().at(edge->getTargetId()).get();
 
-        QPointF sourcePos = sourceNode->GetData().position;
-        QPointF targetPos = targetNode->GetData().position;
-        QLineF line = applyEdgeOffset(sourcePos, targetPos);
-        scene->addLine(line, QPen(edgeColor, edgeFat));
-        drawArrow(line);
+        QLineF line = applyEdgeOffset(sourceNode->getPosition(),  targetNode->getPosition());
+        edge->setLine(line);
+        QColor color = (id == selectedEdgeId) ? selectedEdgeColor : edgeColor;
+        scene->addLine(line, QPen(color, edgeFat));
+        drawArrow(line, id == selectedEdgeId);
     }
 }
 
@@ -94,6 +95,7 @@ void GraphView::drawNodeText(QPointF center, QString name)
     text->setPos(center.x() - textRect.width()/2,
                  center.y() - textRect.height()/2);
     text->setDefaultTextColor(nodeTextColor);
+    text->setFont(QFont("Arial", textSize));
 }
 
 // Отрисовать узлы
@@ -102,10 +104,10 @@ void GraphView::drawNodes()
     const auto& nodes = graph->getNodes();
     for (const auto& [id, node] : nodes)
     {
-        QPointF center = node->GetData().position;
+        QPointF center = node->getPosition();
         QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor) : QBrush(nodeColor); // Цвет в зависимости от выделенности
         scene->addEllipse(center.x() - nodeSize, center.y() - nodeSize, nodeSize*2, nodeSize*2, QPen(borderColor, borderFat), brush);
-        drawNodeText(center, node->GetData().name);
+        drawNodeText(center, node->getData().name);
     }
 }
 
@@ -128,7 +130,7 @@ int GraphView::findNodeAt(QPointF position)
     const auto& nodes = graph->getNodes();
     for (const auto& [id, node] : nodes)
     {
-        QPointF nodePos = node->GetData().position;
+        QPointF nodePos = node->getPosition();
         if (nodePos.isNull()) continue;
 
         // Проверяем расстояние до центра узла
@@ -138,43 +140,103 @@ int GraphView::findNodeAt(QPointF position)
     return -1;
 }
 
-//Нажатие мышью
+// Найти расстояние от точки до линии
+double GraphView::distanceToLine(QPointF point, QPointF lineStart, QPointF lineEnd)
+{
+    QLineF line(lineStart, lineEnd);
+    if (line.isNull()) return QLineF(point, lineStart).length();
+
+    // Проекция точки на линию
+    double t = ((point.x() - lineStart.x()) * (lineEnd.x() - lineStart.x()) +
+                (point.y() - lineStart.y()) * (lineEnd.y() - lineStart.y())) /
+               (line.length() * line.length());
+
+    t = std::max(0.0, std::min(1.0, t));
+
+    QPointF closestPoint = lineStart + t * (lineEnd - lineStart);
+    return QLineF(point, closestPoint).length();
+}
+
+//Поиск ребра в точке
+int GraphView::findEdgeAt(QPointF position)
+{
+    if (!graph) return -1;
+
+    const auto& edges = graph->getEdges();
+    double minDistance = minDistanceToFind;
+    int closestEdgeId = -1;
+    for(const auto& [id, edge]:edges)
+    {
+        QLineF line = edge->getLine();
+        double distance = distanceToLine(position, line.p1(), line.p2());
+        if(minDistance > distance)
+        {
+            closestEdgeId = id;
+            minDistance = distance;
+        }
+    }
+    return closestEdgeId;
+}
+
+//Обработка ЛКМ
+void GraphView::handleLeftClick(int clickedNodeId, int clickedEdgeId, QPointF scenePos)
+{
+    if (clickedNodeId == -1) // Выбрали не узел
+    {
+        if(clickedEdgeId != -1)//Выбрали ребро
+        {
+            deselectNode();
+            selectedEdgeId = clickedEdgeId;
+            emit edgeSelected(clickedEdgeId);
+        }
+        else if (selectedNodeId != -1 or selectedEdgeId != -1) // не узел и не ребро, но что-то было выделено уже
+            deselectAll();
+        else  //клик в пустоту, когда ничего не выбрано
+            emit clicked(scenePos);
+    }
+    else //выбран узел
+    {
+        deselectEdge();
+        selectedNodeId = clickedNodeId;
+        draggedNodeId = clickedNodeId;  // начинаем перетаскивание
+        emit nodeSelected(clickedNodeId);
+    }
+}
+
+//Обработка ПКМ
+void GraphView::handleRightClick(int clickedNodeId)
+{
+    // ПКМ на узле - создаём связь
+    if (selectedNodeId == -1)
+    {
+        // Первый узел для связи
+        selectedNodeId = clickedNodeId;
+        emit nodeSelected(clickedNodeId);
+    }
+    else if (selectedNodeId != clickedNodeId)
+    {
+        // Второй узел - создаём связь
+        emit edgeCreated(selectedNodeId, clickedNodeId);
+        deselectNode();
+    }
+}
+
+//Обработка нажатия мышью
 void GraphView::mousePressEvent(QMouseEvent* event)
 {
     QPointF scenePos = mapToScene(event->pos());
     int clickedNodeId = findNodeAt(scenePos);
+    int clickedEdgeId = findEdgeAt(scenePos);
 
     if (event->button() == Qt::LeftButton)
     {
-        if (clickedNodeId == -1)
-        {
-            if (selectedNodeId != -1)
-                deselectNode();
-            else
-                emit clicked(scenePos);
-        }
-        else
-        {
-            selectedNodeId = clickedNodeId;
-            draggedNodeId = clickedNodeId;  // начинаем перетаскивание
-            emit nodeSelected(clickedNodeId);
-        }
+        handleLeftClick(clickedNodeId, clickedEdgeId, scenePos);
     }
-    else if (event->button() == Qt::RightButton && clickedNodeId != -1)
+    else if (event->button() == Qt::RightButton)
     {
-        // ПКМ на узле - создаём связь
-        if (selectedNodeId == -1)
-        {
-            // Первый узел для связи
-            selectedNodeId = clickedNodeId;
-            emit nodeSelected(clickedNodeId);
-        }
-        else if (selectedNodeId != clickedNodeId)
-        {
-            // Второй узел - создаём связь
-            emit edgeCreated(selectedNodeId, clickedNodeId);
-            deselectNode();
-        }
+        if(clickedNodeId == -1)
+            return;
+        handleRightClick(clickedNodeId);
     }
     drawGraph();
 }
@@ -186,7 +248,7 @@ void GraphView::mouseMoveEvent(QMouseEvent* event)
     {
         QPointF scenePos = mapToScene(event->pos());
         auto node = graph->getNodes().at(draggedNodeId).get();
-        node->SetPosition(scenePos);
+        node->setPosition(scenePos);
         drawGraph();
     }
 }

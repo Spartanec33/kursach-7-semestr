@@ -12,8 +12,7 @@ GraphController::GraphController(Graph* model, GraphView* v, QObject* parent)
 void GraphController::addNodeAt(const QPointF& position)
 {
     NodeData data;
-    data.position = position;
-    graph->addNode(data);
+    graph->addNode(data, position);
     view->drawGraph();
 }
 
@@ -44,14 +43,14 @@ void GraphController::removeEdge(int id)
 void GraphController::removeSelectedNode()
 {
     removeNode(view->getSelectedNode());
-    view->deselectNode();
+    view->deselectAll();
 }
 
 // Удалить выбранное ребро
 void GraphController::removeSelectedEdge()
 {
-    //removeEdge(view->getSelectedEdge());
-    //view->deselectEdge();
+    removeEdge(view->getSelectedEdge());
+    view->deselectAll();
 }
 
 

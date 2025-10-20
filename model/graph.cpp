@@ -1,11 +1,11 @@
 #include "graph.h"
 
 //Добавить узел
-void Graph::addNode(NodeData data)
+void Graph::addNode(NodeData data, QPointF position)
 {
     int id = nextNodeId++;
     data.name = QString("Node %1").arg(id);
-    nodes[id] = make_unique<Node>(id, data);
+    nodes[id] = make_unique<Node>(id, data, position);
 }
 
 //Удалить узел
@@ -18,7 +18,7 @@ bool Graph::removeNode(int nodeId)
     vector<int> edgesToRemove;
     for (const auto& [id, edge] : edges)
     {
-        if (edge->GetSourceId() == nodeId or edge->GetTargetId() == nodeId)
+        if (edge->getSourceId() == nodeId or edge->getTargetId() == nodeId)
             edgesToRemove.push_back(id);
     }
 
@@ -44,8 +44,8 @@ void Graph::addEdge(EdgeData data, int sourceId, int targetId)
         // Проверка на существующее ребро
         for (const auto& [id, edge] : edges)
         {
-            if ((edge->GetSourceId() == sourceId && edge->GetTargetId() == targetId)) //можно в обе стороны связь
-                //or (edge->GetSourceId() == targetId && edge->GetTargetId() == sourceId)) //только в одну сторону связь
+            if ((edge->getSourceId() == sourceId && edge->getTargetId() == targetId)) //можно в обе стороны связь
+                //or (edge->getSourceId() == targetId && edge->getTargetId() == sourceId)) //только в одну сторону связь
                 return;
         }
 
