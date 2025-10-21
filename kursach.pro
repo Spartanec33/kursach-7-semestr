@@ -20,7 +20,9 @@ SOURCES += \
     model/edge.cpp \
     model/graph.cpp \
     model/node.cpp \
-    view/graphview.cpp
+    view/edgeform.cpp \
+    view/graphview.cpp \
+    view/nodeform.cpp
 
 HEADERS += \
     controller/graphcontroller.h \
@@ -28,7 +30,9 @@ HEADERS += \
     model/edge.h \
     model/graph.h \
     model/node.h \
+    view/edgeform.h \
     view/graphview.h \
+    view/nodeform.h \
     view/stylesheet.h
 
 FORMS += \

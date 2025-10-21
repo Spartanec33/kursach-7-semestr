@@ -8,6 +8,14 @@ void Graph::addNode(NodeData data, QPointF position)
     nodes[id] = make_unique<Node>(id, data, position);
 }
 
+//Добавить готовый узел(только для загрузки)
+void Graph::addNode(Node node)
+{
+    int id = node.getId();
+    nextNodeId = (id > nextNodeId) ? id+1 : nextNodeId;
+    nodes[node.getId()] = make_unique<Node>(node);
+}
+
 //Удалить узел
 bool Graph::removeNode(int nodeId)
 {
@@ -54,8 +62,40 @@ void Graph::addEdge(EdgeData data, int sourceId, int targetId)
     }
 }
 
+//Добавить готовое ребро(только для загрузки)
+void Graph::addEdge(Edge edge)
+{
+    int id = edge.getId();
+    nextEdgeId = (id > nextEdgeId) ? id+1 : nextEdgeId;
+    edges[edge.getId()] = make_unique<Edge>(edge);
+}
+
+
 //Удалить ребро
 bool Graph::removeEdge(int edgeId)
 {
     return edges.erase(edgeId) > 0;
+}
+
+//Получить конкретный узел
+Node* Graph::getNode(int id)
+{
+    auto it = nodes.find(id);
+    return (it != nodes.end()) ? it->second.get() : nullptr;
+}
+
+//Получить конкретное ребро
+Edge* Graph::getEdge(int id)
+{
+    auto it = edges.find(id);
+    return (it != edges.end()) ? it->second.get() : nullptr;
+}
+
+// Очистить граф
+void Graph::clear()
+{
+    nextNodeId = 0;
+    nextEdgeId = 0;
+    nodes.clear();
+    edges.clear();
 }

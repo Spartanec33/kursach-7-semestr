@@ -30,4 +30,16 @@ void MainWindow::setupUI()
 
     QAction* removeEdgeAction = toolbar->addAction("Remove Edge");
     connect(removeEdgeAction, &QAction::triggered, controller, &GraphController::removeSelectedEdge);
+
+    QAction* infoAction = toolbar->addAction("Info");
+    connect(infoAction, &QAction::triggered, controller, &GraphController::showInfoForm);
+
+    QAction* saveAction = toolbar->addAction("Save");
+    connect(saveAction, &QAction::triggered, controller, &GraphController::saveGraph);
+
+    QAction* loadAction = toolbar->addAction("Load");
+    connect(loadAction, &QAction::triggered, controller, &GraphController::loadGraph);
+
+    QAction* clearAction = toolbar->addAction("Clear");
+    connect(clearAction, &QAction::triggered, controller, &GraphController::clearGraph);
 }
