@@ -4,7 +4,7 @@
 #include <QGraphicsEllipseItem>
 
 //красота в узлах
-const int nodeSize = 80;                     //размер узла
+const int nodeSize = 40;                     //размер узла
 const QColor nodeTextColor = Qt::black;      //цвет текста в узле
 const int textSize = 10;                     //размер шрифта
 const QColor nodeColor = Qt::gray   ;        //цвет узла

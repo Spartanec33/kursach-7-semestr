@@ -257,5 +257,8 @@ void GraphView::mouseMoveEvent(QMouseEvent* event)
 void GraphView::mouseReleaseEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton && draggedNodeId != -1)
+    {
         draggedNodeId = -1;
+        emit moved();
+    }
 }

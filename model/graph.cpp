@@ -1,5 +1,47 @@
 #include "graph.h"
 
+
+Graph::Graph(const Graph &other)
+    : nextNodeId(other.nextNodeId), nextEdgeId(other.nextEdgeId)
+{
+    for (const auto& [id, node] : other.nodes)
+    {
+        if (node)
+            nodes[id] = make_unique<Node>(*node);
+    }
+
+    for (const auto& [id, edge] : other.edges)
+    {
+        if (edge)
+            edges[id] = make_unique<Edge>(*edge);
+    }
+}
+
+Graph& Graph::operator=(const Graph& other)
+{
+    if (this != &other)
+    {
+        nodes.clear();
+        edges.clear();
+
+        nextNodeId = other.nextNodeId;
+        nextEdgeId = other.nextEdgeId;
+
+        for (const auto& [id, node] : other.nodes)
+        {
+            if (node)
+                nodes[id] = make_unique<Node>(*node);
+        }
+
+        for (const auto& [id, edge] : other.edges)
+        {
+            if (edge)
+                edges[id] = make_unique<Edge>(*edge);
+        }
+    }
+    return *this;
+}
+
 //Добавить узел
 void Graph::addNode(NodeData data, QPointF position)
 {
@@ -98,4 +140,43 @@ void Graph::clear()
     nextEdgeId = 0;
     nodes.clear();
     edges.clear();
+}
+
+QDataStream& operator<<(QDataStream& out, const Graph& graph)
+{
+    const auto& nodes = graph.getNodes();
+    int nodesCount = nodes.size();
+    out << nodesCount;
+    for (const auto& [id, node] : nodes)
+        out << *node;
+
+    const auto& edges = graph.getEdges();
+    int edgesCount = edges.size();
+    out << edgesCount;
+    for (const auto& [id, edge] : edges)
+        out << *edge;
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, Graph& graph)
+{
+    int nodeCount;
+    Node node;
+    in >> nodeCount;
+    for(int i = 0; i < nodeCount; i++)
+    {
+        in >> node;
+        graph.addNode(node);
+    }
+
+    //Ребра
+    int edgeCount;
+    Edge edge;
+    in >> edgeCount;
+    for(int i = 0; i < edgeCount; i++)
+    {
+        in >> edge;
+        graph.addEdge(edge);
+    }
+    return in;
 }

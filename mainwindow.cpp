@@ -34,6 +34,12 @@ void MainWindow::setupUI()
     QAction* infoAction = toolbar->addAction("Info");
     connect(infoAction, &QAction::triggered, controller, &GraphController::showInfoForm);
 
+    QAction* undoAction = toolbar->addAction("Undo");
+    connect(undoAction, &QAction::triggered, controller, &GraphController::undo);
+
+    QAction* redoAction = toolbar->addAction("Redo");
+    connect(redoAction, &QAction::triggered, controller, &GraphController::redo);
+
     QAction* saveAction = toolbar->addAction("Save");
     connect(saveAction, &QAction::triggered, controller, &GraphController::saveGraph);
 

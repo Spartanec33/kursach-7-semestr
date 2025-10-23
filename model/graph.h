@@ -11,6 +11,8 @@ using namespace std;
 class Graph
 {
 public:
+    Graph()= default;
+    Graph(const Graph& other);
     void addNode(NodeData data, QPointF position);           //Добавить узел
     void addNode(Node node);                                 //Добавить готовый узел(только для загрузки)
     bool removeNode(int nodeId);                             //Удалить узел
@@ -26,6 +28,9 @@ public:
     Node* getNode(int id); //Получить конкретный узел
     Edge* getEdge(int id); //Получить конкретное ребро
 
+    Graph& operator=(const Graph& other);
+    friend QDataStream& operator<<(QDataStream& out, const Graph& graph); //Сериализация
+    friend QDataStream& operator>>(QDataStream& in, Graph& graph);        //Десериализация
 private:
     unordered_map<int, unique_ptr<Node>> nodes; // Словарь узлов: [ID → указатель на узел]
     unordered_map<int, unique_ptr<Edge>> edges; // Словарь рёбер: [ID → указатель на ребро]

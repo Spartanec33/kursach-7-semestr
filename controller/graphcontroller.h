@@ -9,6 +9,7 @@
 #include "nodeform.h"
 #include "edgeform.h"
 #include <QMessageBox>
+#include <vector>
 
 class GraphController : public QObject
 {
@@ -29,6 +30,10 @@ public slots:
     void saveGraph(); //Сохранить граф
     void loadGraph(); //Загрузить граф
 
+    void graphChanged(); //Обработать изменение графа
+
+    void undo();   //Шаг в прошлое в истории графов
+    void redo();   //Шаг в будущее в истории графов
 private:
     void removeNode(int id); // Удалить узел по его id
     void removeEdge(int id); // Удалить ребро по его id
@@ -36,9 +41,8 @@ private:
     void processNodeForm(int selectedNodeId); // Обработка информационного окошка узла
     void processEdgeForm(int selectedEdgeId); // Обработка информационного окошка ребра
 
-    void serializeGraph(QFile& file);   // Сереализация графа
-    void deserializeGraph(QFile& file); // Десереализация графа
-
+    vector<Graph> graphHistory; // История графов
+    int currentIndex = -1;      // Текущее положение в истории графов
     Graph* graph;    //Модель
     GraphView* view; //Вид
 

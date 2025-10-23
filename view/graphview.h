@@ -25,6 +25,7 @@ signals:
     void nodeSelected(int nodeId);          //Сигнал выбора узла
     void edgeSelected(int edgeId);          //Сигнал выбора ребра
     void edgeCreated(int fromId, int toId); //Сигнал создания ребра
+    void moved();
 
 protected:
     void handleLeftClick(int clickedNodeId, int clickedEdgeId, QPointF scenePos); //Обработка ЛКМ
