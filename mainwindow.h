@@ -16,6 +16,7 @@ public:
 
 private:
     void setupUI();
+    void closeEvent(QCloseEvent* event) override;
 
     Graph* graph;
     GraphView* view;

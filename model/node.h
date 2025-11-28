@@ -9,6 +9,7 @@
 struct NodeData
 {
     QString name; // Название узла
+    QString info; // Текстовое описание узла
     friend QDataStream& operator<<(QDataStream& out, const NodeData& data); //Сериализация
     friend QDataStream& operator>>(QDataStream& in, NodeData& data);        //Десериализация
 };

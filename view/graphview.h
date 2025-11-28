@@ -4,7 +4,6 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include "graph.h"
-#include "styleSheet.h"
 
 class GraphView : public QGraphicsView
 {

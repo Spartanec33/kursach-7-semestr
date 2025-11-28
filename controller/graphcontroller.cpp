@@ -34,6 +34,11 @@ void GraphController::removeNode(int id)
 {
     if (graph->removeNode(id))
         graphChanged();
+    else
+    {
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Сначала выделите завод");
+    }
 }
 
 // Удалить ребро по его id
@@ -41,6 +46,11 @@ void GraphController::removeEdge(int id)
 {
     if (graph->removeEdge(id))
         graphChanged();
+    else
+    {
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Сначала выделите поставку");
+    }
 }
 
 // Удалить выбранный узел
@@ -72,11 +82,13 @@ void GraphController::processNodeForm(int selectedNodeId)
 
     NodeForm form(nullptr);
     form.setName(node->getData().name);
+    form.setInfo(node->getData().info);
 
     if (form.exec() == QDialog::Accepted)
     {
         NodeData data = node->getData();
         data.name = form.getName();
+        data.info = form.getInfo();
         node->setData(data);
         graphChanged();
     }
@@ -116,10 +128,10 @@ void GraphController::showInfoForm()
     }
     else// Ничего не выделено
     {
-        QMessageBox::information(nullptr, "Info",
-            "Please select a node or edge first!\n\n"
-            "• Click on node to select it\n"
-            "• Click on edge to select it");
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Сначала выделите завод или поставку\n\n"
+            "• Нажмите на узел, чтобы выделить завод\n"
+            "• Нажмите на ребро, чтобы выделить поставку");
     }
 }
 
@@ -192,6 +204,11 @@ void GraphController::undo()
         *graph = graphHistory[--currentIndex];
         view->drawGraph();
     }
+    else
+    {
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Больше идти назад некуда.");
+    }
 }
 
 //Шаг в будущее в истории графов
@@ -202,6 +219,36 @@ void GraphController::redo()
     {
         *graph = graphHistory[++currentIndex];
         view->drawGraph();
+    }
+    else
+    {
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Больше идти вперед некуда.");
+    }
+}
+
+bool GraphController::handleCloseEvent()
+{
+
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Выход");
+    msgBox.setText("Сохранить изменения перед выходом?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    msgBox.setButtonText(QMessageBox::Save, "Сохранить");
+    msgBox.setButtonText(QMessageBox::Discard, "Не сохранять");
+    msgBox.setButtonText(QMessageBox::Cancel, "Отмена");
+
+    int result = msgBox.exec();
+
+    switch (result)
+    {
+        case QMessageBox::Save:
+            saveGraph();
+            return true;
+        case QMessageBox::Discard:
+            return true;
+        case QMessageBox::Cancel:
+            return false;
     }
 }
 

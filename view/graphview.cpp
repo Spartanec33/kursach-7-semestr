@@ -1,6 +1,7 @@
 #include "graphview.h"
 #include <QMouseEvent>
-#include "styleSheet.h"
+#include "config.h"
+//#include "styleSheet.h"
 
 GraphView::GraphView(QWidget* parent)
     : QGraphicsView(parent), scene(new QGraphicsScene(this))
@@ -32,7 +33,7 @@ QLineF GraphView::applyEdgeOffset(QPointF start, QPointF end)
         perpendicular /= length;
 
     // Смещаем линию
-    line.translate(perpendicular * edgeOffset);
+    line.translate(perpendicular * edgeOffset());
 
     return line;
 }
@@ -48,22 +49,22 @@ void GraphView::drawArrow(QLineF line, bool isSelected)
 
     // Создаем точки для стрелки
     QPointF arrowP1 = arrowBase + QPointF(
-                sin(angle + M_PI / 3) * arrowSize,
-                cos(angle + M_PI / 3) * arrowSize
+                sin(angle + M_PI / 3) * arrowSize(),
+                cos(angle + M_PI / 3) * arrowSize()
                 );
 
     QPointF arrowP2 = arrowBase + QPointF(
-               sin(angle + M_PI - M_PI / 3) * arrowSize,
-                cos(angle + M_PI - M_PI / 3) * arrowSize
+               sin(angle + M_PI - M_PI / 3) * arrowSize(),
+                cos(angle + M_PI - M_PI / 3) * arrowSize()
                 );
 
     // Создаем полигон для стрелки
     QPolygonF arrowHead;
     arrowHead << arrowBase << arrowP1 << arrowP2;
 
-    QBrush brush = (isSelected) ? QBrush(selectedArrowColor) : QBrush(arrowColor); // Цвет в зависимости от выделенности
+    QBrush brush = (isSelected) ? QBrush(selectedArrowColor()) : QBrush(arrowColor()); // Цвет в зависимости от выделенности
     // Добавляем стрелку на сцену
-    scene->addPolygon(arrowHead,QPen(edgeColor, edgeFat), brush);
+    scene->addPolygon(arrowHead,QPen(edgeColor(), edgeWidth()), brush);
 }
 
 // Отрисовать ребра
@@ -79,8 +80,8 @@ void GraphView::drawEdges()
 
         QLineF line = applyEdgeOffset(sourceNode->getPosition(),  targetNode->getPosition());
         edge->setLine(line);
-        QColor color = (id == selectedEdgeId) ? selectedEdgeColor : edgeColor;
-        scene->addLine(line, QPen(color, edgeFat));
+        QColor color = (id == selectedEdgeId) ? selectedEdgeColor() : edgeColor();
+        scene->addLine(line, QPen(color, edgeWidth()));
         drawArrow(line, id == selectedEdgeId);
     }
 }
@@ -94,8 +95,8 @@ void GraphView::drawNodeText(QPointF center, QString name)
     QRectF textRect = text->boundingRect();
     text->setPos(center.x() - textRect.width()/2,
                  center.y() - textRect.height()/2);
-    text->setDefaultTextColor(nodeTextColor);
-    text->setFont(QFont("Arial", textSize));
+    text->setDefaultTextColor(nodeTextColor());
+    text->setFont(QFont("Arial", textSize()));
 }
 
 // Отрисовать узлы
@@ -105,8 +106,8 @@ void GraphView::drawNodes()
     for (const auto& [id, node] : nodes)
     {
         QPointF center = node->getPosition();
-        QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor) : QBrush(nodeColor); // Цвет в зависимости от выделенности
-        scene->addEllipse(center.x() - nodeSize, center.y() - nodeSize, nodeSize*2, nodeSize*2, QPen(borderColor, borderFat), brush);
+        QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor()) : QBrush(nodeColor()); // Цвет в зависимости от выделенности
+        scene->addEllipse(center.x() - nodeSize(), center.y() - nodeSize(), nodeSize()*2, nodeSize()*2, QPen(borderColor(), edgeWidth()), brush);
         drawNodeText(center, node->getData().name);
     }
 }
@@ -134,7 +135,7 @@ int GraphView::findNodeAt(QPointF position)
         if (nodePos.isNull()) continue;
 
         // Проверяем расстояние до центра узла
-        if (QLineF(nodePos, position).length() < nodeSize)
+        if (QLineF(nodePos, position).length() < nodeSize())
             return id;
     }
     return -1;
@@ -163,7 +164,7 @@ int GraphView::findEdgeAt(QPointF position)
     if (!graph) return -1;
 
     const auto& edges = graph->getEdges();
-    double minDistance = minDistanceToFind;
+    double minDistance = minDistanceToFind();
     int closestEdgeId = -1;
     for(const auto& [id, edge]:edges)
     {

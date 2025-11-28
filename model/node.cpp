@@ -9,13 +9,13 @@ Node::Node(const Node &other)
 
 QDataStream& operator<<(QDataStream& out, const NodeData& data)
 {
-    out << data.name;
+    out << data.name << data.info;
     return out;
 }
 
 QDataStream& operator>>(QDataStream& in, NodeData& data)
 {
-    in >> data.name;
+    in >> data.name >> data.info;
     return in;
 }
 

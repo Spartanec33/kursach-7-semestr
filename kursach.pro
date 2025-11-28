@@ -12,6 +12,7 @@ INCLUDEPATH += model
 INCLUDEPATH += view
 INCLUDEPATH += controller
 
+RC_ICONS = appIcon.ico
 
 SOURCES += \
     controller/graphcontroller.cpp \
@@ -30,10 +31,10 @@ HEADERS += \
     model/edge.h \
     model/graph.h \
     model/node.h \
+    view/config.h \
     view/edgeform.h \
     view/graphview.h \
-    view/nodeform.h \
-    view/stylesheet.h
+    view/nodeform.h
 
 FORMS += \
     mainwindow.ui

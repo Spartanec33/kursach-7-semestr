@@ -5,22 +5,28 @@
 
 NodeForm::NodeForm(QWidget* parent) : QDialog(parent)
 {
-    setWindowTitle("Node Properties");
+    setWindowTitle("Сведения о заводе");
     setModal(true);
-    resize(300, 120);
+    resize(400, 240);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
 
     // Поле для имени
-    QLabel* label = new QLabel("Node name:", this);
+    QLabel* label = new QLabel("Название:", this);
     nameEdit = new QLineEdit(this);
     layout->addWidget(label);
     layout->addWidget(nameEdit);
 
+    // Поле для описания
+    label = new QLabel("Описание:", this);
+    infoEdit = new QPlainTextEdit(this);
+    layout->addWidget(label);
+    layout->addWidget(infoEdit);
+
     // Кнопки
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    QPushButton* okButton = new QPushButton("OK", this);
-    QPushButton* cancelButton = new QPushButton("Cancel", this);
+    QPushButton* okButton = new QPushButton("ОК", this);
+    QPushButton* cancelButton = new QPushButton("Отмена", this);
 
     buttonLayout->addWidget(okButton);
     buttonLayout->addWidget(cancelButton);
@@ -38,4 +44,14 @@ void NodeForm::setName(const QString& name)
 QString NodeForm::getName() const
 {
     return nameEdit->text();
+}
+
+void NodeForm::setInfo(const QString& info)
+{
+    infoEdit->setPlainText(info);
+}
+
+QString NodeForm::getInfo() const
+{
+    return infoEdit->toPlainText();
 }

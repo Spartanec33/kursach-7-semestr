@@ -34,6 +34,8 @@ public slots:
 
     void undo();   //Шаг в прошлое в истории графов
     void redo();   //Шаг в будущее в истории графов
+
+    bool handleCloseEvent();
 private:
     void removeNode(int id); // Удалить узел по его id
     void removeEdge(int id); // Удалить ребро по его id

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 
 //Окно информации о ребре
@@ -16,7 +17,7 @@ public:
     QString getInfo() const;
 
 private:
-    QLineEdit* infoEdit;
+    QPlainTextEdit* infoEdit;
 };
 
 #endif // EDGEFORM_H

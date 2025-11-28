@@ -5,22 +5,22 @@
 
 EdgeForm::EdgeForm(QWidget* parent) : QDialog(parent)
 {
-    setWindowTitle("Edge Properties");
+    setWindowTitle("Сведения о поставке");
     setModal(true);
-    resize(300, 120);
+    resize(400, 240);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
 
-    // Поле для имени
-    QLabel* label = new QLabel("Edge info:", this);
-    infoEdit = new QLineEdit(this);
+    // Поле для описания
+    QLabel* label = new QLabel("Описание:", this);
+    infoEdit = new QPlainTextEdit(this);
     layout->addWidget(label);
     layout->addWidget(infoEdit);
 
     // Кнопки
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    QPushButton* okButton = new QPushButton("OK", this);
-    QPushButton* cancelButton = new QPushButton("Cancel", this);
+    QPushButton* okButton = new QPushButton("ОК", this);
+    QPushButton* cancelButton = new QPushButton("Отмена", this);
 
     buttonLayout->addWidget(okButton);
     buttonLayout->addWidget(cancelButton);
@@ -32,10 +32,10 @@ EdgeForm::EdgeForm(QWidget* parent) : QDialog(parent)
 
 void EdgeForm::setInfo(const QString& info)
 {
-    infoEdit->setText(info);
+    infoEdit->setPlainText(info);
 }
 
 QString EdgeForm::getInfo() const
 {
-    return infoEdit->text();
+    return infoEdit->toPlainText();
 }
