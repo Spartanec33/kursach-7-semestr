@@ -1,20 +1,21 @@
 #ifndef EDGEFORM_H
 #define EDGEFORM_H
 
-#include <QDialog>
-#include <QLineEdit>
+#include <QWidget>
 #include <QPlainTextEdit>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 
-//Окно информации о ребре
-class EdgeForm : public QDialog
+class EdgeForm : public QWidget
 {
     Q_OBJECT
 public:
     EdgeForm(QWidget* parent = nullptr);
 
-    void setInfo(const QString& Info);
+    void setInfo(const QString& info);
     QString getInfo() const;
+    void setReadOnly(bool readOnly); //Установить флаг "только для чтения"
 
 private:
     QPlainTextEdit* infoEdit;

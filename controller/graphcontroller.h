@@ -15,7 +15,7 @@ class GraphController : public QObject
 {
     Q_OBJECT
 public:
-    GraphController(Graph* model, GraphView* view, QObject* parent = nullptr);
+    GraphController(QObject* parent = nullptr);
 
 public slots:
     void addNodeAt(const QPointF& position); // Добавить узел в точку
@@ -35,13 +35,17 @@ public slots:
     void undo();   //Шаг в прошлое в истории графов
     void redo();   //Шаг в будущее в истории графов
 
-    bool handleCloseEvent();
+    bool handleCloseEvent(); //Обработать закрытие программы
+
+    GraphView* getView(){return view;}
+    Graph* getGraph(){return graph;}
 private:
     void removeNode(int id); // Удалить узел по его id
     void removeEdge(int id); // Удалить ребро по его id
 
-    void processNodeForm(int selectedNodeId); // Обработка информационного окошка узла
-    void processEdgeForm(int selectedEdgeId); // Обработка информационного окошка ребра
+    QDialog* createDialog(const QString& title, QWidget* content); // Общая функция создания диалога с кнопками
+    void processNodeForm(int selectedNodeId);                      // Обработка информационного окошка узла
+    void processEdgeForm(int selectedEdgeId);                      // Обработка информационного окошка ребра
 
     vector<Graph> graphHistory; // История графов
     int currentIndex = -1;      // Текущее положение в истории графов

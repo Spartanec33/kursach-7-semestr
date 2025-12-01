@@ -17,13 +17,14 @@ public:
     void drawGraph();                  //Отрисовать граф
     void deselectNode(){selectedNodeId = -1;}                     //Снять выделение узла
     void deselectEdge(){selectedEdgeId = -1;}                     //Снять выделение ребра
-    void deselectAll(){selectedNodeId = -1; selectedEdgeId = -1;} //Снять все выделения
+    void deselectAll(); //Снять все выделения
 
 signals:
     void clicked(QPointF position);         //Сигнал клика на поле
     void nodeSelected(int nodeId);          //Сигнал выбора узла
     void edgeSelected(int edgeId);          //Сигнал выбора ребра
     void edgeCreated(int fromId, int toId); //Сигнал создания ребра
+    void deselected();                      //Сигнал сброса выбора всего
     void moved();
 
 protected:

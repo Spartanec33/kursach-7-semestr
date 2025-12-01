@@ -123,6 +123,13 @@ void GraphView::drawGraph()
     drawNodes();
 }
 
+void GraphView::deselectAll()
+{
+    selectedNodeId = -1;
+    selectedEdgeId = -1;
+    emit deselected();
+}
+
 //Поиск узла в точке
 int GraphView::findNodeAt(QPointF position)
 {
@@ -218,7 +225,7 @@ void GraphView::handleRightClick(int clickedNodeId)
     {
         // Второй узел - создаём связь
         emit edgeCreated(selectedNodeId, clickedNodeId);
-        deselectNode();
+        deselectAll();
     }
 }
 

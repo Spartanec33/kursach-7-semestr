@@ -10,6 +10,7 @@ CONFIG += c++17
 
 INCLUDEPATH += model
 INCLUDEPATH += view
+INCLUDEPATH += view\ui
 INCLUDEPATH += controller
 
 RC_ICONS = appIcon.ico
@@ -17,24 +18,28 @@ RC_ICONS = appIcon.ico
 SOURCES += \
     controller/graphcontroller.cpp \
     main.cpp \
-    mainwindow.cpp \
+    view/ui/mainwindow.cpp \
     model/edge.cpp \
     model/graph.cpp \
     model/node.cpp \
-    view/edgeform.cpp \
+    view/ui/edgeform.cpp \
     view/graphview.cpp \
-    view/nodeform.cpp
+    view/ui/nodeform.cpp \
+    view/ui/sidebarpanel.cpp \
+    view/ui/tipslabel.cpp
 
 HEADERS += \
     controller/graphcontroller.h \
-    mainwindow.h \
+    view/ui/mainwindow.h \
     model/edge.h \
     model/graph.h \
     model/node.h \
-    view/config.h \
-    view/edgeform.h \
+    view/ui/config.h \
+    view/ui/edgeform.h \
     view/graphview.h \
-    view/nodeform.h
+    view/ui/nodeform.h \
+    view/ui/sidebarpanel.h \
+    view/ui/tipslabel.h
 
 FORMS += \
     mainwindow.ui

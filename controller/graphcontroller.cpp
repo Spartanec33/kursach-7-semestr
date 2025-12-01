@@ -1,11 +1,13 @@
 #include "graphcontroller.h"
-
 #include <QFileDialog>
+#include <QDialog>
 
-GraphController::GraphController(Graph* model, GraphView* v, QObject* parent)
-    : QObject(parent), graph(model), view(v)
+GraphController::GraphController(QObject* parent)
+    : QObject(parent)
 {
-    graphChanged();
+    graph = new Graph();
+    view = new GraphView();
+
     view->setGraph(graph);
     connect(view, &GraphView::clicked, this, &GraphController::addNodeAt);
     connect(view, &GraphView::edgeCreated, this, &GraphController::addEdge);
@@ -71,7 +73,32 @@ void GraphController::removeSelectedEdge()
 void GraphController::clearGraph()
 {
     graph->clear();
+    view->deselectAll();
     graphChanged();
+}
+
+// Общая функция создания диалога с кнопками
+QDialog* GraphController::createDialog(const QString& title, QWidget* content)
+{
+    QDialog* dialog = new QDialog(nullptr);
+    dialog->setWindowTitle(title);
+    dialog->resize(400, 240);
+
+    QVBoxLayout* layout = new QVBoxLayout(dialog);
+    layout->addWidget(content);
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    QPushButton* okButton = new QPushButton("ОК", dialog);
+    QPushButton* cancelButton = new QPushButton("Отмена", dialog);
+
+    buttonLayout->addWidget(okButton);
+    buttonLayout->addWidget(cancelButton);
+    layout->addLayout(buttonLayout);
+
+    connect(okButton, &QPushButton::clicked, dialog, &QDialog::accept);
+    connect(cancelButton, &QPushButton::clicked, dialog, &QDialog::reject);
+
+    return dialog;
 }
 
 // Обработка информационного окошка узла
@@ -80,33 +107,35 @@ void GraphController::processNodeForm(int selectedNodeId)
     Node* node = graph->getNode(selectedNodeId);
     if (!node) return;
 
-    NodeForm form(nullptr);
-    form.setName(node->getData().name);
-    form.setInfo(node->getData().info);
+    NodeForm* form = new NodeForm();
+    form->setName(node->getData().name);
+    form->setInfo(node->getData().info);
 
-    if (form.exec() == QDialog::Accepted)
+    QScopedPointer<QDialog> dialog(createDialog("Сведения о заводе", form));
+    if (dialog->exec() == QDialog::Accepted)
     {
         NodeData data = node->getData();
-        data.name = form.getName();
-        data.info = form.getInfo();
+        data.name = form->getName();
+        data.info = form->getInfo();
         node->setData(data);
         graphChanged();
     }
 }
 
-// Обработка информационного окошка ребра
+// Обработка информационного окошка поставки
 void GraphController::processEdgeForm(int selectedEdgeId)
 {
     Edge* edge = graph->getEdge(selectedEdgeId);
     if (!edge) return;
 
-    EdgeForm form(nullptr);
-    form.setInfo(edge->getData().info);
+    EdgeForm* form = new EdgeForm();
+    form->setInfo(edge->getData().info);
 
-    if (form.exec() == QDialog::Accepted)
+    QScopedPointer<QDialog> dialog(createDialog("Сведения о поставке", form));
+    if (dialog->exec() == QDialog::Accepted)
     {
         EdgeData data = edge->getData();
-        data.info = form.getInfo();
+        data.info = form->getInfo();
         edge->setData(data);
         graphChanged();
     }
@@ -121,10 +150,12 @@ void GraphController::showInfoForm()
     if (selectedNodeId != -1) //Выделен узел
     {
         processNodeForm(selectedNodeId);
+        view->nodeSelected(selectedNodeId);
     }
     else if (selectedEdgeId != -1) //Выделено ребро
     {
         processEdgeForm(selectedEdgeId);
+        view->edgeSelected(selectedEdgeId);
     }
     else// Ничего не выделено
     {
@@ -167,13 +198,18 @@ void GraphController::loadGraph()
         QFile file(fileName);
         if(file.open(QIODevice::ReadOnly))
         {
-            delete graph;
-            graph = new Graph();
+            view->setGraph(nullptr);
             view->deselectAll();
 
+            Graph* newGraph = new Graph();
+
             QDataStream input(&file);
-            input >> *graph;
+            input >> *newGraph;
+            if (graph)
+                delete graph;
+            graph = newGraph;
             view->setGraph(graph);
+            graphHistory.clear();
             currentIndex = -1;
             graphChanged();
             file.close();
@@ -227,9 +263,9 @@ void GraphController::redo()
     }
 }
 
+//Обработать закрытие программы
 bool GraphController::handleCloseEvent()
 {
-
     QMessageBox msgBox;
     msgBox.setWindowTitle("Выход");
     msgBox.setText("Сохранить изменения перед выходом?");

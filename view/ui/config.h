@@ -31,14 +31,14 @@ public:
         m_nodeTextColor = QColor(settings.value("Node/nodeTextColor", "black").toString());
 
         // Настройки ребер
-        m_edgeWidth = settings.value("Edge/edgeWidth", 5).toInt();
+        m_edgeWidth = settings.value("Edge/edgeWidth", 3).toInt();
         m_edgeColor = QColor(settings.value("Edge/edgeColor", "black").toString());
         m_selectedEdgeColor = QColor(settings.value("Edge/selectedEdgeColor", "red").toString());
-        m_edgeOffset = settings.value("Edge/edgeOffset", 20).toDouble();
-        m_arrowSize = settings.value("Edge/arrowSize", 30).toInt();
+        m_edgeOffset = settings.value("Edge/edgeOffset", 10).toDouble();
+        m_arrowSize = settings.value("Edge/arrowSize", 20).toInt();
         m_arrowColor = QColor(settings.value("Edge/arrowColor", "red").toString());
         m_selectedArrowColor = QColor(settings.value("Edge/selectedArrowColor", "green").toString());
-        m_minDistanceToFind = settings.value("Edge/minDistanceToFind", 15).toDouble();
+        m_minDistanceToFind = settings.value("Edge/minDistanceToFind", 10).toDouble();
     }
 
     int m_nodeSize = 40;                    // размер узла
@@ -49,14 +49,14 @@ public:
     int m_textSize = 10;                    // размер шрифта
     QColor m_nodeTextColor = Qt::black;     // цвет текста
 
-    int m_edgeWidth = 5;                    // ширина ребра
+    int m_edgeWidth = 3;                    // ширина ребра
     QColor m_edgeColor = Qt::black;         // цвет ребра
     QColor m_selectedEdgeColor = Qt::red;   // цвет выделенного ребра
-    double m_edgeOffset = 20;               // смещение ребер
-    int m_arrowSize = 30;                   // размер стрелки
+    double m_edgeOffset = 10;               // смещение ребер
+    int m_arrowSize = 20;                   // размер стрелки
     QColor m_arrowColor = Qt::red;          // цвет стрелки
     QColor m_selectedArrowColor = Qt::green;// цвет выделенной стрелки
-    double m_minDistanceToFind = 15;        // минимальное расстояние для поиска ребра при клике
+    double m_minDistanceToFind = 10;        // минимальное расстояние для поиска ребра при клике
 };
 
 //Глобальные функции для взятия значений
