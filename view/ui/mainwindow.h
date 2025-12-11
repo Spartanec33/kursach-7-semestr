@@ -28,10 +28,10 @@ private:
     void closeEvent(QCloseEvent* event) override;   //Обработка события изменения размера окна приложения
     void resizeEvent(QResizeEvent* event) override; //Обработка события закрытия приложения
 
-    GraphController* controller;
-    TipsLabel* tipsLabel;
-    SidebarPanel* sidebarPanel;
-    bool isTipsVisible = true;
+    GraphController* controller; //Контроллер
+    TipsLabel* tipsLabel;        //Виджет подсказок
+    SidebarPanel* sidebarPanel;  //Виджет информации
+    bool isTipsVisible = true;   //Флаг, указывающий должны ли подсказки отображаться
 };
 
 #endif // MAINWINDOW_H
