@@ -11,13 +11,13 @@ Edge::Edge(const Edge &other)
 
 QDataStream& operator<<(QDataStream& out, const EdgeData& data)
 {
-    out << data.info;
+    out << data.info << data.products;
     return out;
 }
 
 QDataStream& operator>>(QDataStream& in, EdgeData& data)
 {
-    in >> data.info;
+    in >> data.info >> data.products;
     return in;
 }
 

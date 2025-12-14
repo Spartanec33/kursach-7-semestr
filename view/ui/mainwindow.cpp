@@ -110,6 +110,7 @@ void MainWindow::onNodeSelected(int nodeId)
 {
     Node* node = controller->getGraph()->getNode(nodeId);
     if (!node) return;
+
     tipsLabel->showNodeSelected();
     sidebarPanel->showNodeSelected(node);
 }
@@ -119,9 +120,11 @@ void MainWindow::onEdgeSelected(int edgeId)
 {
     Edge* edge = controller->getGraph()->getEdge(edgeId);
     if (!edge) return;
+    Node* node = controller->getGraph()->getNode(edge->getSourceId());
+    if (!node) return;
 
     tipsLabel->showEdgeSelected();
-    sidebarPanel->showEdgeSelected(edge);
+    sidebarPanel->showEdgeSelected(edge, node);
 }
 
 //Обработка снятия выбора

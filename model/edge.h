@@ -4,11 +4,14 @@
 #include <QLineF>
 #include <QString>
 #include <QDataStream>
+#include <QList>
 
 // Данные ребра - хранит информацию о связи
+// При изменении обновить: потоки вывода, showEdgeSelected, EdgeForm, processEdgeForm
 struct EdgeData
 {
-    QString info;
+    QString info;            // Описание поставки
+    QList<QString> products; // Изделия, которые передаются в поставке
 
     friend QDataStream& operator<<(QDataStream& out, const EdgeData& data);//Сериализация
     friend QDataStream& operator>>(QDataStream& in, EdgeData& data);       //Десериализация

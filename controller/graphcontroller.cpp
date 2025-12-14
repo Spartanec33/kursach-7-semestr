@@ -1,6 +1,8 @@
 #include "graphcontroller.h"
 #include <QFileDialog>
 #include <QDialog>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 GraphController::GraphController(QObject* parent)
     : QObject(parent)
@@ -110,6 +112,7 @@ void GraphController::processNodeForm(int selectedNodeId)
     NodeForm* form = new NodeForm();
     form->setName(node->getData().name);
     form->setInfo(node->getData().info);
+    form->setProducts(node->getData().products);
 
     QScopedPointer<QDialog> dialog(createDialog("Сведения о заводе", form));
     if (dialog->exec() == QDialog::Accepted)
@@ -117,6 +120,8 @@ void GraphController::processNodeForm(int selectedNodeId)
         NodeData data = node->getData();
         data.name = form->getName();
         data.info = form->getInfo();
+        data.products = form->getProducts();
+
         node->setData(data);
         graphChanged();
     }
@@ -128,14 +133,21 @@ void GraphController::processEdgeForm(int selectedEdgeId)
     Edge* edge = graph->getEdge(selectedEdgeId);
     if (!edge) return;
 
+    Node* sourceNode = graph->getNode(edge->getSourceId());
+    if (!sourceNode) return;
+
     EdgeForm* form = new EdgeForm();
     form->setInfo(edge->getData().info);
+    form->setProducts(edge->getData().products);
+    form->setAvailableProducts(sourceNode->getData().products);
 
     QScopedPointer<QDialog> dialog(createDialog("Сведения о поставке", form));
     if (dialog->exec() == QDialog::Accepted)
     {
         EdgeData data = edge->getData();
         data.info = form->getInfo();
+        data.products = form->getProducts();
+
         edge->setData(data);
         graphChanged();
     }

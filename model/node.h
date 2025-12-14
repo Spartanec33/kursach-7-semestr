@@ -4,12 +4,16 @@
 #include <QString>
 #include <QPointF>
 #include <QDataStream>
+#include <QList>
 
 // Данные узла - вся информация о узле
+// При изменении обновить: потоки вывода, showNodeSelected, NodeForm, processNodeForm
 struct NodeData
 {
-    QString name; // Название узла
-    QString info; // Текстовое описание узла
+    QString name;            // Название узла
+    QString info;            // Текстовое описание узла
+    QList<QString> products; // Изделия, которые производит завод (порядок важен)
+
     friend QDataStream& operator<<(QDataStream& out, const NodeData& data); //Сериализация
     friend QDataStream& operator>>(QDataStream& in, NodeData& data);        //Десериализация
 };

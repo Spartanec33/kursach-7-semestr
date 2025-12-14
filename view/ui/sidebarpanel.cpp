@@ -20,7 +20,7 @@ void SidebarPanel::setupStyle()
         "}"
     );
     setFixedWidth(250);
-    setFixedHeight(200);
+    setFixedHeight(300);
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
@@ -50,6 +50,7 @@ void SidebarPanel::showNodeSelected(Node* node)
     NodeForm* form = new NodeForm(this);
     form->setName(node->getData().name);
     form->setInfo(node->getData().info);
+    form->setProducts(node->getData().products);
     form->setReadOnly(true);
 
     currentWidget = form;
@@ -57,12 +58,14 @@ void SidebarPanel::showNodeSelected(Node* node)
 }
 
 //Показать виджет с информацией о ребре
-void SidebarPanel::showEdgeSelected(Edge* edge)
+void SidebarPanel::showEdgeSelected(Edge* edge, Node* source)
 {
     clear();
 
     EdgeForm* form = new EdgeForm(this);
     form->setInfo(edge->getData().info);
+    form->setAvailableProducts(source->getData().products);
+    form->setProducts(edge->getData().products);
     form->setReadOnly(true);
 
     currentWidget = form;
