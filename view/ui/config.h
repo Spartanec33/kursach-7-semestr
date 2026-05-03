@@ -6,6 +6,7 @@
 #include <QGraphicsLineItem>
 #include <QGraphicsEllipseItem>
 
+//модуль конфигурации графических параметров узлов и ребер графа
 class Config
 {
 public:

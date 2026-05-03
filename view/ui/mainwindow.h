@@ -8,6 +8,8 @@
 #include "tipslabel.h"
 #include "sidebarpanel.h"
 
+
+//Окно программы
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

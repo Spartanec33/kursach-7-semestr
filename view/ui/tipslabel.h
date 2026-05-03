@@ -4,6 +4,7 @@
 #include <QLabel>
 #include <QWidget>
 
+//Подсказки, какие действия можно сейчас совершать
 class TipsLabel : public QLabel
 {
     Q_OBJECT
