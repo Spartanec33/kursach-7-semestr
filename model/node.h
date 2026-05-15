@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QPointF>
-#include <QDataStream>
+#include <QTextStream>
 #include <QList>
 
 // Данные узла - вся информация о узле
@@ -11,13 +11,12 @@
 struct NodeData
 {
     QString name;            // Название узла
-    QString info;            // Текстовое описание узла
-    QList<QString> products; // Изделия, которые производит завод (порядок важен)
 
-    friend QDataStream& operator<<(QDataStream& out, const NodeData& data); //Сериализация
-    friend QDataStream& operator>>(QDataStream& in, NodeData& data);        //Десериализация
+    friend QTextStream& operator<<(QTextStream& out, const NodeData& data);
+    friend QTextStream& operator>>(QTextStream& in, NodeData& data);
 };
 
+//Узел
 class Node
 {
 public:
@@ -31,8 +30,8 @@ public:
     QPointF getPosition() { return position; }        // Получить позицию
     void setPosition(QPointF pos) { position = pos; } // Установить позицию
 
-    friend QDataStream& operator<<(QDataStream& out, const Node& node); //Сериализация
-    friend QDataStream& operator>>(QDataStream& in, Node& node);        //Десериализация
+    friend QTextStream& operator<<(QTextStream& out, const Node& node);
+    friend QTextStream& operator>>(QTextStream& in, Node& node);
 private:
     NodeData data;    //Данные узла
     QPointF position; // Позиция узла

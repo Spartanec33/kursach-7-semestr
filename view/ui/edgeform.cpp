@@ -1,207 +1,41 @@
 #include "edgeform.h"
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
+#include <QIntValidator>
 
 EdgeForm::EdgeForm(QWidget* parent) : QWidget(parent)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    // Описание поставки
-    mainLayout->addWidget(new QLabel("Описание поставки:"));
-    infoEdit = new QPlainTextEdit;
-    infoEdit->setMaximumHeight(60);
-    mainLayout->addWidget(infoEdit);
+    mainLayout->addWidget(new QLabel("Вес связи (число):"));
 
-    // Информационная строка
-    infoLabel = new QLabel("Выберите изделия для поставки");
-    infoLabel->setStyleSheet("padding: 5px; background: #f0f0f0; border-radius: 3px;");
-    mainLayout->addWidget(infoLabel);
+    weightEdit = new QLineEdit;
 
-    // Два списка с кнопками между ними
-    QHBoxLayout* listsLayout = new QHBoxLayout;
+    // Ограничиваем ввод: только целые числа от 0 до 1 000 000
+    // Это автоматически запретит вводить буквы и знак "минус"
+    QIntValidator* validator = new QIntValidator(0, 1000000, this);
+    weightEdit->setValidator(validator);
 
-    // Левый список: доступные изделия
-    QVBoxLayout* leftLayout = new QVBoxLayout;
-    leftLayout->addWidget(new QLabel("Доступно:"));
-    availableList = new QListWidget;
-    leftLayout->addWidget(availableList);
+    weightEdit->setPlaceholderText("Введите вес...");
 
-    // Кнопки для левого списка
-    QHBoxLayout* leftButtons = new QHBoxLayout;
-    addAllButton = new QPushButton(">> Все");
-    leftButtons->addWidget(addAllButton);
-    leftButtons->addStretch();
-    leftLayout->addLayout(leftButtons);
-
-    listsLayout->addLayout(leftLayout);
-
-    // Центральные кнопки
-    QVBoxLayout* centerButtons = new QVBoxLayout;
-    centerButtons->addStretch();
-    addButton = new QPushButton(">");
-    addButton->setFixedWidth(40);
-    removeButton = new QPushButton("<");
-    removeButton->setFixedWidth(40);
-    centerButtons->addWidget(addButton);
-    centerButtons->addWidget(removeButton);
-    centerButtons->addStretch();
-    listsLayout->addLayout(centerButtons);
-
-    // Правый список: выбранные изделия
-    QVBoxLayout* rightLayout = new QVBoxLayout;
-    rightLayout->addWidget(new QLabel("Поставляется:"));
-    selectedList = new QListWidget;
-    rightLayout->addWidget(selectedList);
-
-    // Кнопки для правого списка
-    QHBoxLayout* rightButtons = new QHBoxLayout;
-    removeAllButton = new QPushButton("Все <<");
-    rightButtons->addStretch();
-    rightButtons->addWidget(removeAllButton);
-    rightLayout->addLayout(rightButtons);
-
-    listsLayout->addLayout(rightLayout);
-    mainLayout->addLayout(listsLayout);
-
-    connect(addButton, &QPushButton::clicked, this, &EdgeForm::onAddProduct);
-    connect(removeButton, &QPushButton::clicked, this, &EdgeForm::onRemoveProduct);
-    connect(addAllButton, &QPushButton::clicked, this, &EdgeForm::onAddAll);
-    connect(removeAllButton, &QPushButton::clicked, this, &EdgeForm::onRemoveAll);
+    mainLayout->addWidget(weightEdit);
+    mainLayout->addStretch();
 }
 
-void EdgeForm::onAddProduct()
+void EdgeForm::setWeight(int weight)
 {
-    QListWidgetItem* currentItem = availableList->currentItem();
-    if (currentItem)
-    {
-        // Переносим из доступных в выбранные
-        QString product = currentItem->text();
-        delete currentItem;
-        selectedList->addItem(product);
-
-        // Обновляем информацию
-        infoLabel->setText(QString("Выбрано %1 изделий").arg(selectedList->count()));
-    }
+    // Если пришло отрицательное число из кода — принудительно ставим 0
+    weightEdit->setText(QString::number(qMax(0, weight)));
 }
 
-void EdgeForm::onRemoveProduct()
+int EdgeForm::getWeight() const
 {
-    QListWidgetItem* currentItem = selectedList->currentItem();
-    if (currentItem)
-    {
-        // Возвращаем из выбранных в доступные
-        QString product = currentItem->text();
-        delete currentItem;
-        availableList->addItem(product);
-
-        // Обновляем информацию
-        infoLabel->setText(QString("Выбрано %1 изделий").arg(selectedList->count()));
-    }
-}
-
-void EdgeForm::onAddAll()
-{
-    // Переносим все из доступных в выбранные
-    while (availableList->count() > 0)
-    {
-        QListWidgetItem* item = availableList->takeItem(0);
-        selectedList->addItem(item->text());
-        delete item;
-    }
-    infoLabel->setText(QString("Выбрано %1 изделий").arg(selectedList->count()));
-}
-
-void EdgeForm::onRemoveAll()
-{
-    // Возвращаем все из выбранных в доступные
-    while (selectedList->count() > 0)
-    {
-        QListWidgetItem* item = selectedList->takeItem(0);
-        availableList->addItem(item->text());
-        delete item;
-    }
-    infoLabel->setText(QString("Выбрано %1 изделий").arg(selectedList->count()));
-}
-
-void EdgeForm::setInfo(const QString& info)
-{
-    infoEdit->setPlainText(info);
-}
-
-QString EdgeForm::getInfo() const
-{
-    return infoEdit->toPlainText().trimmed();
-}
-
-void EdgeForm::setProducts(const QList<QString>& products)
-{
-    selectedList->clear();
-    selectedList->addItems(products);
-    infoLabel->setText(QString("Выбрано %1 изделий").arg(selectedList->count()));
-
-
-    // Очищаем от мусора.
-    for (int i = selectedList->count() - 1; i >= 0; --i)
-    {
-        QListWidgetItem* item = selectedList->item(i);
-        if (!allAvailableProducts.contains(item->text()))
-            delete selectedList->takeItem(i);
-    }
-
-    // Удаляем выбранные из доступных
-    for (int i = availableList->count() - 1; i >= 0; --i)
-    {
-        QListWidgetItem* item = availableList->item(i);
-        if (products.contains(item->text()))
-            delete availableList->takeItem(i);
-    }
-}
-
-QList<QString> EdgeForm::getProducts() const
-{
-    QList<QString> products;
-    for (int i = 0; i < selectedList->count(); ++i)
-        products.append(selectedList->item(i)->text().trimmed());
-    return products;
-}
-
-void EdgeForm::setAvailableProducts(const QList<QString>& products)
-{
-    availableList->clear();
-    availableList->addItems(products);
-    allAvailableProducts = products;
-    // Удаляем уже выбранные
-    for (int i = availableList->count() - 1; i >= 0; --i)
-    {
-        QListWidgetItem* item = availableList->item(i);
-        // Проверяем, нет ли этого товара уже в выбранных
-        bool found = false;
-        for (int j = 0; j < selectedList->count(); ++j)
-        {
-            if (selectedList->item(j)->text() == item->text())
-            {
-                found = true;
-                break;
-            }
-        }
-        if (found)
-            delete availableList->takeItem(i);
-    }
-
-
-
+    // Преобразуем текст обратно в число
+    return weightEdit->text().toInt();
 }
 
 void EdgeForm::setReadOnly(bool readOnly)
 {
-    infoEdit->setEnabled(!readOnly);
-    selectedList->setEnabled(!readOnly);
-    availableList->setEnabled(!readOnly);
-
-    infoLabel->setVisible(!readOnly);
-    addButton->setVisible(!readOnly);
-    removeButton->setVisible(!readOnly);
-    addAllButton->setVisible(!readOnly);
-    removeAllButton->setVisible(!readOnly);
+    weightEdit->setReadOnly(readOnly);
+    // Визуально серым закрасим, если только чтение
+    weightEdit->setEnabled(!readOnly);
 }

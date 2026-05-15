@@ -3,6 +3,7 @@
 #include <QDialog>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QComboBox>
 
 GraphController::GraphController(QObject* parent)
     : QObject(parent)
@@ -28,8 +29,12 @@ void GraphController::addNodeAt(const QPointF& position)
 void GraphController::addEdge(int fromId, int toId)
 {
     EdgeData data;
-    data.info = QString("Edge %1->%2").arg(fromId).arg(toId);
-    graph->addEdge(data, fromId, toId);
+    data.weight = 0;
+    if(!graph->addEdge(data, fromId, toId))
+    {
+        QMessageBox::warning(nullptr, "Ошибка", "Невозможно создать связь");
+        return;
+    }
     graphChanged();
 }
 
@@ -41,7 +46,7 @@ void GraphController::removeNode(int id)
     else
     {
         QMessageBox::information(nullptr, "Предупреждение",
-            "Сначала выделите завод");
+            "Сначала выделите узел");
     }
 }
 
@@ -53,7 +58,7 @@ void GraphController::removeEdge(int id)
     else
     {
         QMessageBox::information(nullptr, "Предупреждение",
-            "Сначала выделите поставку");
+            "Сначала выделите ребро");
     }
 }
 
@@ -103,7 +108,6 @@ QDialog* GraphController::createDialog(const QString& title, QWidget* content)
     return dialog;
 }
 
-// Обработка информационного окошка узла
 void GraphController::processNodeForm(int selectedNodeId)
 {
     Node* node = graph->getNode(selectedNodeId);
@@ -111,23 +115,28 @@ void GraphController::processNodeForm(int selectedNodeId)
 
     NodeForm* form = new NodeForm();
     form->setName(node->getData().name);
-    form->setInfo(node->getData().info);
-    form->setProducts(node->getData().products);
 
-    QScopedPointer<QDialog> dialog(createDialog("Сведения о заводе", form));
-    if (dialog->exec() == QDialog::Accepted)
+    QScopedPointer<QDialog> dialog(createDialog("Сведения о узле", form));
+
+    while (dialog->exec() == QDialog::Accepted)
     {
-        NodeData data = node->getData();
-        data.name = form->getName();
-        data.info = form->getInfo();
-        data.products = form->getProducts();
+        QString newName = form->getName();
 
+        if (graph->isNameExists(newName, node->getId()))
+        {
+            QMessageBox::warning(nullptr, "Ошибка", "Узел с таким названием уже существует!");
+            continue;
+        }
+
+        NodeData data = node->getData();
+        data.name = newName;
         node->setData(data);
         graphChanged();
+        break;
     }
 }
 
-// Обработка информационного окошка поставки
+// Обработка информационного окошка ребра
 void GraphController::processEdgeForm(int selectedEdgeId)
 {
     Edge* edge = graph->getEdge(selectedEdgeId);
@@ -137,17 +146,13 @@ void GraphController::processEdgeForm(int selectedEdgeId)
     if (!sourceNode) return;
 
     EdgeForm* form = new EdgeForm();
-    form->setInfo(edge->getData().info);
-    form->setProducts(edge->getData().products);
-    form->setAvailableProducts(sourceNode->getData().products);
+    form->setWeight(edge->getData().weight);
 
-    QScopedPointer<QDialog> dialog(createDialog("Сведения о поставке", form));
+    QScopedPointer<QDialog> dialog(createDialog("Сведения о ребре", form));
     if (dialog->exec() == QDialog::Accepted)
     {
         EdgeData data = edge->getData();
-        data.info = form->getInfo();
-        data.products = form->getProducts();
-
+        data.weight = form->getWeight();
         edge->setData(data);
         graphChanged();
     }
@@ -172,11 +177,108 @@ void GraphController::showInfoForm()
     else// Ничего не выделено
     {
         QMessageBox::information(nullptr, "Предупреждение",
-            "Сначала выделите завод или поставку\n\n"
-            "• Нажмите на узел, чтобы выделить завод\n"
-            "• Нажмите на ребро, чтобы выделить поставку");
+            "Сначала выделите узел или ребро\n\n"
+            "• Нажмите на узел, чтобы выделить узел\n"
+            "• Нажмите на ребро, чтобы выделить ребро");
     }
 }
+
+//Показать диалог для решения задачи ДП
+void GraphController::showSolveDialog()
+{
+    if(graph->hasAnyCycle())
+    {
+        QMessageBox::warning(nullptr, "Ошибка", "Граф содержит циклы, решение методом ДП невозможно");
+        return;
+    }
+    if(!graph->getNodes().size())
+    {
+        QMessageBox::warning(nullptr, "Ошибка", "Граф пуст");
+        return;
+    }
+    QDialog dialog;
+    dialog.setWindowTitle("Поиск кратчайшего пути");
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+
+    // Создаем списки выбора (ComboBox)
+    QComboBox* startCombo = new QComboBox();
+    QComboBox* endCombo = new QComboBox();
+
+    // Заполняем их именами всех узлов
+    for (auto const& [id, node] : graph->getNodes())
+    {
+        QString name = node->getData().name;
+        startCombo->addItem(name, id);
+        endCombo->addItem(name, id);
+    }
+
+    layout->addWidget(new QLabel("Выберите начальный узел:"));
+    layout->addWidget(startCombo);
+    layout->addWidget(new QLabel("Выберите конечный узел:"));
+    layout->addWidget(endCombo);
+
+    QPushButton* solveBtn = new QPushButton("Рассчитать");
+    layout->addWidget(solveBtn);
+
+    connect(solveBtn, &QPushButton::clicked, [&]()
+    {
+        int idFrom = startCombo->currentData().toInt();
+        int idTo = endCombo->currentData().toInt();
+        dialog.accept();
+        solvePathWithExport(idFrom, idTo);
+    });
+
+    dialog.exec();
+}
+
+void GraphController::solvePathWithExport(int startId, int endId)
+{
+    int resDist = 0;
+    QString resPath = "";
+    auto [path, logText] = graph->findShortestPathWithLog(startId, endId, resDist, resPath);
+
+    if (path.empty())
+    {
+        QMessageBox::warning(nullptr, "Результат", "Путь не найден. Лог не будет сохранен.");
+        return;
+    }
+    else
+    {
+        QString resultMessage = QString("Итоговый путь: %1\nОбщая стоимость: %2")
+                                            .arg(resPath)
+                                            .arg(resDist);
+
+        QMessageBox::information(nullptr, "Путь найден", resultMessage);
+    }
+
+    // Предлагаем сохранить лог в файл
+    QMessageBox askBox(QMessageBox::Question, "Сохранение отчета",
+                           "Желаете сохранить подробный протокол решения в текстовый файл?",
+                           QMessageBox::Yes | QMessageBox::No);
+
+    askBox.setButtonText(QMessageBox::Yes, "Да");
+    askBox.setButtonText(QMessageBox::No, "Нет");
+    if (askBox.exec() == QMessageBox::Yes)
+    {
+        QString fileName = QFileDialog::getSaveFileName(nullptr,
+            "Сохранить отчет о решении", "", "Text Files (*.txt)");
+
+        if (!fileName.isEmpty())
+        {
+            QFile file(fileName);
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                QTextStream out(&file);
+                out << logText;
+                file.close();
+                QMessageBox::information(nullptr, "Успех", "Отчет успешно сохранен в файл.");
+            }
+        }
+    }
+}
+
+
 
 //Сохранить граф
 void GraphController::saveGraph()
@@ -184,14 +286,14 @@ void GraphController::saveGraph()
     QFileDialog dialog(nullptr);
     dialog.setWindowTitle("Save Graph");
     dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setNameFilter("Binary Files (*.bin)");
+    dialog.setNameFilter("Text Files (*.txt)");
     if (dialog.exec() == QDialog::Accepted)
     {
         QString fileName = dialog.selectedFiles().first();
         QFile file(fileName);
-        if(file.open(QIODevice::WriteOnly))
+        if(file.open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            QDataStream output(&file);
+            QTextStream output(&file);
             output << *graph;
             file.close();
         }
@@ -203,28 +305,54 @@ void GraphController::loadGraph()
 {
     QFileDialog dialog(nullptr);
     dialog.setWindowTitle("Load Graph");
-    dialog.setNameFilter("Binary Files (*.bin)");
+    dialog.setNameFilter("Text Files (*.txt);;All Files (*)");
+
     if (dialog.exec() == QDialog::Accepted)
     {
         QString fileName = dialog.selectedFiles().first();
         QFile file(fileName);
-        if(file.open(QIODevice::ReadOnly))
+        if(file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
+            QTextStream input(&file);
+            Graph* newGraph = new Graph();
+            input >> *newGraph;
+
+            // Проверка на адекватность данных
+            if (input.status() != QTextStream::Ok)
+            {
+                QMessageBox::critical(nullptr, "Ошибка загрузки",
+                    "Файл содержит некорректные данные!\n\n"
+                    "Возможные причины:\n"
+                    "- Узлы имеют одинаковые имена\n"
+                    "- Обнаружены связи в обе стороны\n"
+                    "- Присутствуют отрицательные веса\n"
+                    "- Нарушена структура текстового файла");
+
+                delete newGraph;
+                file.close();
+                return;
+            }
+
+            // Если данные валидны — обновляем рабочее состояние
             view->setGraph(nullptr);
             view->deselectAll();
 
-            Graph* newGraph = new Graph();
-
-            QDataStream input(&file);
-            input >> *newGraph;
             if (graph)
                 delete graph;
+
             graph = newGraph;
-            view->setGraph(graph);
+            view->setGraph(graph); // Подключаем новый валидный граф
+
+            // Сброс истории правок и уведомление системы об изменениях
             graphHistory.clear();
             currentIndex = -1;
             graphChanged();
+
             file.close();
+        }
+        else
+        {
+            QMessageBox::warning(nullptr, "Ошибка", "не удалось открыть файл для чтения.");
         }
     }
 }
@@ -299,8 +427,6 @@ bool GraphController::handleCloseEvent()
             return false;
     }
 }
-
-
 
 
 

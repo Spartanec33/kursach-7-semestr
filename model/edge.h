@@ -3,18 +3,17 @@
 
 #include <QLineF>
 #include <QString>
-#include <QDataStream>
+#include <QTextStream>
 #include <QList>
 
 // Данные ребра - хранит информацию о связи
 // При изменении обновить: потоки вывода, showEdgeSelected, EdgeForm, processEdgeForm
 struct EdgeData
 {
-    QString info;            // Описание поставки
-    QList<QString> products; // Изделия, которые передаются в поставке
+    double weight;
 
-    friend QDataStream& operator<<(QDataStream& out, const EdgeData& data);//Сериализация
-    friend QDataStream& operator>>(QDataStream& in, EdgeData& data);       //Десериализация
+    friend QTextStream& operator<<(QTextStream& out, const EdgeData& data);
+    friend QTextStream& operator>>(QTextStream& in, EdgeData& data);
 };
 
 // Класс ребра - представляет связь между двумя узлами
@@ -33,8 +32,8 @@ public:
     EdgeData getData() {return data;}   //Получить данные
     void setData(EdgeData d){data = d;} //Установить данные
 
-    friend QDataStream& operator<<(QDataStream& out, const Edge& edge);//Сериализация
-    friend QDataStream& operator>>(QDataStream& in, Edge& edge);       //Десериализация
+    friend QTextStream& operator<<(QTextStream& out, const Edge& edge);
+    friend QTextStream& operator>>(QTextStream& in, Edge& edge);
 
 private:
     int id;           //id ребра

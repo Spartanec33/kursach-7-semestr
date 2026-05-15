@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include "graph.h"
 
+//Визуальное отображение и обработка событий графа
 class GraphView : public QGraphicsView
 {
     Q_OBJECT
@@ -25,7 +26,7 @@ signals:
     void edgeSelected(int edgeId);          //Сигнал выбора ребра
     void edgeCreated(int fromId, int toId); //Сигнал создания ребра
     void deselected();                      //Сигнал сброса выбора всего
-    void moved();
+    void moved();							//Сигнал сдвига
 
 protected:
     void handleLeftClick(int clickedNodeId, int clickedEdgeId, QPointF scenePos); //Обработка ЛКМ

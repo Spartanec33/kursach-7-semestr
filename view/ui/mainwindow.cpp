@@ -63,7 +63,7 @@ void MainWindow::setupUI()
 {
     GraphView* view = controller->getView();
     setCentralWidget(view);
-    setWindowTitle("Редактор графов заводов и поставок");
+    setWindowTitle("Мат прога2");
     resize(800, 600);
 
     QToolBar* toolbar = addToolBar("Tools");
@@ -86,14 +86,17 @@ void MainWindow::setupUI()
     QAction* loadAction = toolbar->addAction("Загрузить");
     connect(loadAction, &QAction::triggered, controller, &GraphController::loadGraph);
 
-    QAction* removeNodeAction = toolbar->addAction("Удалить завод");
+    QAction* removeNodeAction = toolbar->addAction("Удалить узел");
     connect(removeNodeAction, &QAction::triggered, controller, &GraphController::removeSelectedNode);
 
-    QAction* removeEdgeAction = toolbar->addAction("Удалить поставку");
+    QAction* removeEdgeAction = toolbar->addAction("Удалить ребро");
     connect(removeEdgeAction, &QAction::triggered, controller, &GraphController::removeSelectedEdge);
 
     QAction* clearAction = toolbar->addAction("Очистить");
     connect(clearAction, &QAction::triggered, controller, &GraphController::clearGraph);
+
+    QAction* solveAction = toolbar->addAction("Решить");
+    connect(solveAction, &QAction::triggered, controller, &GraphController::showSolveDialog);
 }
 
 //Подключение сигналов от GraphView к MainWindow

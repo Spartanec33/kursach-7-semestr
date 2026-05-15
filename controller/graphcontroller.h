@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <vector>
 
+//Основной контроллер системы, связывающий графическое представление с объектами графа
 class GraphController : public QObject
 {
     Q_OBJECT
@@ -37,8 +38,11 @@ public slots:
 
     bool handleCloseEvent(); //Обработать закрытие программы
 
-    GraphView* getView(){return view;}
-    Graph* getGraph(){return graph;}
+    void showSolveDialog(); //Показать диалог для решения задачи ДП
+    void solvePathWithExport(int startId, int endId); //Решить задачу поиска кратчайшего пути и экспортировать результат
+
+    GraphView* getView(){return view;} // Получить указатель на графическое представление
+    Graph* getGraph(){return graph;}   // Получить указатель на текущую модель графа
 private:
     void removeNode(int id); // Удалить узел по его id
     void removeEdge(int id); // Удалить ребро по его id

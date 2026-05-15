@@ -7,27 +7,35 @@ Node::Node(const Node &other)
 {}
 
 
-QDataStream& operator<<(QDataStream& out, const NodeData& data)
+QTextStream& operator<<(QTextStream& out, const NodeData& data)
 {
-    out << data.name << data.info << data.products;;
+    out << data.name.trimmed().replace(" ", "_");
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, NodeData& data)
+QTextStream& operator>>(QTextStream& in, NodeData& data)
 {
-    in >> data.name >> data.info >> data.products;;
+    QString rawName;
+    in >> rawName;
+    data.name = rawName.replace("_", " ");
     return in;
 }
 
-QDataStream& operator<<(QDataStream& out, const Node& node)
+QTextStream& operator<<(QTextStream& out, const Node& node)
 {
-    out << node.id << node.data << node.position;
+    // Формат: id x y name
+    out << node.id << " "
+        << node.position.x() << " "
+        << node.position.y() << " "
+        << node.data;
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, Node& node)
+QTextStream& operator>>(QTextStream& in, Node& node)
 {
-    in >> node.id >> node.data >> node.position;
+    double x, y;
+    in >> node.id >> x >> y >> node.data;
+    node.position = QPointF(x, y);
     return in;
 }
 

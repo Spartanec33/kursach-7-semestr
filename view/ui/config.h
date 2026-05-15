@@ -35,7 +35,7 @@ public:
         m_edgeWidth = settings.value("Edge/edgeWidth", 3).toInt();
         m_edgeColor = QColor(settings.value("Edge/edgeColor", "black").toString());
         m_selectedEdgeColor = QColor(settings.value("Edge/selectedEdgeColor", "red").toString());
-        m_edgeOffset = settings.value("Edge/edgeOffset", 10).toDouble();
+        m_edgeOffset = settings.value("Edge/edgeOffset", 0).toDouble();
         m_arrowSize = settings.value("Edge/arrowSize", 20).toInt();
         m_arrowColor = QColor(settings.value("Edge/arrowColor", "red").toString());
         m_selectedArrowColor = QColor(settings.value("Edge/selectedArrowColor", "green").toString());
@@ -53,7 +53,7 @@ public:
     int m_edgeWidth = 3;                    // ширина ребра
     QColor m_edgeColor = Qt::black;         // цвет ребра
     QColor m_selectedEdgeColor = Qt::red;   // цвет выделенного ребра
-    double m_edgeOffset = 10;               // смещение ребер
+    double m_edgeOffset = 0;               // смещение ребер
     int m_arrowSize = 20;                   // размер стрелки
     QColor m_arrowColor = Qt::red;          // цвет стрелки
     QColor m_selectedArrowColor = Qt::green;// цвет выделенной стрелки

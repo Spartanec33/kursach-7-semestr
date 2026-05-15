@@ -9,35 +9,30 @@ Edge::Edge(const Edge &other)
 {}
 
 
-QDataStream& operator<<(QDataStream& out, const EdgeData& data)
+QTextStream& operator<<(QTextStream& out, const EdgeData& data)
 {
-    out << data.info << data.products;
+    out << data.weight;
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, EdgeData& data)
+QTextStream& operator>>(QTextStream& in, EdgeData& data)
 {
-    in >> data.info >> data.products;
+    in >> data.weight;
     return in;
 }
 
-QDataStream& operator<<(QDataStream& out, const Edge& edge)
+QTextStream& operator<<(QTextStream& out, const Edge& edge)
 {
-    out << edge.id
-        << edge.sourceNodeId
-        << edge.targetNodeId
-        << edge.data
-        << edge.line;
+    // Формат: id sourceId targetId weight
+    out << edge.id << " "
+        << edge.sourceNodeId << " "
+        << edge.targetNodeId << " "
+        << edge.data;
     return out;
 }
 
-QDataStream& operator>>(QDataStream& in, Edge& edge)
+QTextStream& operator>>(QTextStream& in, Edge& edge)
 {
-    in  >> edge.id
-        >> edge.sourceNodeId
-        >> edge.targetNodeId
-        >> edge.data
-        >> edge.line;
+    in >> edge.id >> edge.sourceNodeId >> edge.targetNodeId >> edge.data;
     return in;
 }
-
