@@ -14,16 +14,19 @@ public:
 
     int getSelectedNode() {return selectedNodeId;} //Взять id выделенного узла
     int getSelectedEdge() {return selectedEdgeId;} //Взять id выделенного ребра
+    bool getIsHighlighted() {return isHighlighted;} //Взать флаг подсветки пути
     void setGraph(const Graph* graph); // Выбрать модель графа
     void drawGraph();                  //Отрисовать граф
     void deselectNode(){selectedNodeId = -1;}                     //Снять выделение узла
     void deselectEdge(){selectedEdgeId = -1;}                     //Снять выделение ребра
     void deselectAll(); //Снять все выделения
+    void highlightPath(const vector<int>& path); //Подсветить путь
 
 signals:
     void clicked(QPointF position);         //Сигнал клика на поле
     void nodeSelected(int nodeId);          //Сигнал выбора узла
     void edgeSelected(int edgeId);          //Сигнал выбора ребра
+    void pathHighlighted();                 //Сигнал подсветки пути
     void edgeCreated(int fromId, int toId); //Сигнал создания ребра
     void deselected();                      //Сигнал сброса выбора всего
     void moved();							//Сигнал сдвига
@@ -38,7 +41,7 @@ protected:
 private:
     QLineF applyEdgeOffset(QPointF start, QPointF end); //Сместить ребро
     void drawEdges();                                   // Отрисовать ребра
-    void drawArrow(QLineF line, bool isSelected);       // Отрисовать стрелку
+    void drawArrow(QLineF line, bool isSelected, double weight);       // Отрисовать стрелку
     void drawNodeText(QPointF center, QString name); // Отрисовать текст в узле
     void drawNodes();                                // Отрисовать узлы
     int findNodeAt(QPointF position); // Поиск узла в точке
@@ -49,8 +52,8 @@ private:
     int draggedNodeId = -1;      // Какой узел тянем
     int selectedNodeId = -1;     // Выбранный узел
     int selectedEdgeId = -1;     // Выбранное ребро
-
-    const Graph* graph = nullptr;//выбранная модель
+    bool isHighlighted = false;  // Флаг подсветки пути
+    const Graph* graph = nullptr;// Выбранная модель
     QGraphicsScene* scene;
 
 };

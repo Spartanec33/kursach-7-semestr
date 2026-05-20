@@ -22,6 +22,7 @@ private slots:
     void onNodeSelected(int nodeId);    //Обработка выбора узла
     void onEdgeSelected(int edgeId);    //Обработка выбора ребра
     void onDeselected();                //Обработка снятия выбора
+    void onHighlighted();               //Обработка подсветки пути
 
 private:
     void setupUI();               //Подготовка основного окна

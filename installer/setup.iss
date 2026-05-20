@@ -1,11 +1,11 @@
 [Setup]
-AppName=Factory Graph Editor
+AppName=MatProgaLazOber
 AppVersion=1.0.0
-AppPublisher=Лазарев Артём Андреевич
-DefaultDirName={autopf}\Factory GE
-DefaultGroupName=Factory GE
+AppPublisher=Лазарев Артём Андреевич + Обернихин Дмитрий Артёмович
+DefaultDirName={autopf}\MatProgaLazOber
+DefaultGroupName=MatProgaLazOber
 OutputDir=output
-OutputBaseFilename=Factory Graph Editor Setup
+OutputBaseFilename=MatProgaLazOber Setup
 Compression=lzma2
 SolidCompression=yes
 ShowLanguageDialog=yes
@@ -18,7 +18,7 @@ DisableWelcomePage=no
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [CustomMessages]
-russian.MyAppDescription=Программа для построения графов и их поставок
+russian.MyAppDescription=Программа для поиска кратчайших путей в ориентированных графах
 russian.LicenseAccepted=Я &принимаю условия соглашения
 
 [Tasks]
@@ -32,12 +32,12 @@ Source: "..\release\platforms\*.dll"; DestDir: "{app}\platforms"; Flags: ignorev
 Source: "..\config.ini"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
 
 [Icons]
-Name: "{group}\Factory GE"; Filename: "{app}\kursach.exe"; IconFilename: "{app}\kursach.exe"
-Name: "{autodesktop}\Factory GE"; Filename: "{app}\kursach.exe"; Tasks: desktopicon; IconFilename: "{app}\kursach.exe"
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Factory GE"; Filename: "{app}\kursach.exe"; Tasks: quicklaunchicon; IconFilename: "{app}\kursach.exe"
+Name: "{group}\MatProgaLazOber"; Filename: "{app}\kursach.exe"; IconFilename: "{app}\kursach.exe"
+Name: "{autodesktop}\MatProgaLazOber"; Filename: "{app}\kursach.exe"; Tasks: desktopicon; IconFilename: "{app}\kursach.exe"
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\MatProgaLazOber"; Filename: "{app}\kursach.exe"; Tasks: quicklaunchicon; IconFilename: "{app}\kursach.exe"
 
 [Run]
-Filename: "{app}\kursach.exe"; Description: "Запустить Factory GE"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\kursach.exe"; Description: "Запустить MatProgaLazOber"; Flags: nowait postinstall skipifsilent
 
 [Messages]
 WelcomeLabel1=Добро пожаловать в программу установки [name]

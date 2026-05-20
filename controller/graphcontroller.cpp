@@ -164,7 +164,14 @@ void GraphController::showInfoForm()
     // Проверяем что выделено
     int selectedNodeId = view->getSelectedNode();
     int selectedEdgeId = view->getSelectedEdge();
-    if (selectedNodeId != -1) //Выделен узел
+    bool isHighlighted = view->getIsHighlighted();
+    if(isHighlighted) //Выделен путь
+    {
+        QMessageBox::information(nullptr, "Предупреждение",
+            "Выделен путь\n\n"
+            "• Нажмите в любое место поля, чтобы снять выделение");
+    }
+    else if (selectedNodeId != -1) //Выделен узел
     {
         processNodeForm(selectedNodeId);
         view->nodeSelected(selectedNodeId);
@@ -276,6 +283,7 @@ void GraphController::solvePathWithExport(int startId, int endId)
             }
         }
     }
+    view->highlightPath(path);
 }
 
 

@@ -73,6 +73,16 @@ void TipsLabel::showNothingSelected()
     applyTip(tips);
 }
 
+//Установить подсказку для состояния, когда подсвечен путь
+void TipsLabel::showHighlighted()
+{
+    QString tips =
+        " <b>Подсвечен путь</b><br><br>"
+        "• ЛКМ/ПКМ сбросить подсветку<br>";
+
+    applyTip(tips);
+}
+
 //Сдвинуть в правый верхний угол
 void TipsLabel::updatePosition()
 {

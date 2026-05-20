@@ -14,6 +14,7 @@ public:
     void showNodeSelected();    //Установить подсказку при выделенном узле
     void showEdgeSelected();    //Установить подсказку при выделенном ребре
     void showNothingSelected(); //Установить подсказку для состояния, когда ничего не выделено
+    void showHighlighted();     //Установить подсказку для состояния, когда подсвечен путь
 
     void updatePosition();      //Сдвинуть в правый верхний угол
 

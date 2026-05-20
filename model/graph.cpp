@@ -316,8 +316,12 @@ bool Graph::dfsCheckCycle(int nodeId, unordered_map<int, bool>& visited,
 pair<vector<int>, QString> Graph::findShortestPathWithLog(int startId, int endId, int& exitDist, QString& exitPath) const
 {
     QString log;
-    log += QString("=== Запуск алгоритма поиска пути ===\n");
-    log += QString("Старт: %1, Цель: %2\n\n").arg(nodes.at(startId)->getData().name).arg(nodes.at(endId)->getData().name);
+    log += QString("==================================================\n");
+    log += QString("   ЗАПУСК АЛГОРИТМА ПОИСКА КРАТЧАЙШЕГО ПУТИ (ДП)  \n");
+    log += QString("==================================================\n");
+    log += QString("Стартовый узел: %1\n").arg(nodes.at(startId)->getData().name);
+    log += QString("Целевой узел:   %2\n").arg(nodes.at(endId)->getData().name);
+    log += QString("--------------------------------------------------\n\n");
 
     unordered_map<int, double> distances;
     unordered_map<int, int> predecessors;
@@ -332,41 +336,61 @@ pair<vector<int>, QString> Graph::findShortestPathWithLog(int startId, int endId
     priority_queue<pii, vector<pii>, greater<pii>> pq;
     pq.push({0, startId});
 
+    int step = 1;
+
     while (!pq.empty())
     {
         int u = pq.top().second;
         double d = pq.top().first;
         pq.pop();
 
-        log += QString("--- Обработка узла: %1 (текущая дистанция: %2) ---\n")
-               .arg(nodes.at(u)->getData().name).arg(d);
+        // Пропускаем устаревшие пары в очереди (важная оптимизация Дейкстры/ДП)
+        if (d > distances[u]) continue;
 
+        log += QString("Шаг %1. Обработка узла [%2] (Текущее мин. расстояние: %3)\n")
+               .arg(step++).arg(nodes.at(u)->getData().name).arg(d);
+        log += QString("  Проверка исходящих ребер:\n");
+
+        bool hasEdges = false;
         for (auto const& [edgeId, edge] : edges)
         {
             if (edge->getSourceId() == u)
             {
+                hasEdges = true;
                 int v = edge->getTargetId();
                 double weight = edge->getData().weight;
 
-                log += QString("  Проверка ребра в %1 (вес %2): ").arg(nodes.at(v)->getData().name).arg(weight);
+                double newDist = distances[u] + weight;
+                log += QString("    -> к [%1] (вес %2): ").arg(nodes.at(v)->getData().name).arg(weight);
 
-                if (distances[u] + weight < distances[v])
+                if (newDist < distances[v])
                 {
-                    distances[v] = distances[u] + weight;
+                    log += QString("УСПЕХ! Путь улучшен: %1 -> %2\n")
+                           .arg(distances[v] == numeric_limits<double>::infinity() ? "INF" : QString::number(distances[v]))
+                           .arg(newDist);
+                    distances[v] = newDist;
                     predecessors[v] = u;
                     pq.push({distances[v], v});
-                    log += QString("Улучшено! Новое расстояние: %1\n").arg(distances[v]);
                 }
                 else
                 {
-                    log += QString("Не улучшено.\n");
+                    log += QString("Мимо (старое расстояние %1 <= нового %2)\n")
+                           .arg(distances[v]).arg(newDist);
                 }
             }
         }
+        if (!hasEdges) {
+            log += QString("    (Нет исходящих ребер)\n");
+        }
+        log += QString("\n"); // Разделитель между шагами
     }
 
     // Восстановление пути
     vector<int> path;
+    log += QString("==================================================\n");
+    log += QString("                 РЕЗУЛЬТАТ ПОИСКА                 \n");
+    log += QString("==================================================\n");
+
     if (predecessors[endId] != -1 || startId == endId)
     {
         for (int v = endId; v != -1; v = predecessors[v])
@@ -376,19 +400,25 @@ pair<vector<int>, QString> Graph::findShortestPathWithLog(int startId, int endId
         }
         reverse(path.begin(), path.end());
 
-        log += "\nИтоговый путь: ";
-        for(int i=0; i<path.size(); ++i)
+        log += "Итоговый маршрут: ";
+        exitPath = "";
+        for(int i = 0; i < path.size(); ++i)
         {
-            log += nodes.at(path[i])->getData().name + (i == path.size()-1 ? "" : " -> ");
-            exitPath += nodes.at(path[i])->getData().name + (i == path.size()-1 ? "" : " -> ");
+            QString nodeName = nodes.at(path[i])->getData().name;
+            log += nodeName + (i == path.size()-1 ? "" : " -> ");
+            exitPath += nodeName + (i == path.size()-1 ? "" : " -> ");
         }
-        log += QString("\nОбщая стоимость: %1").arg(distances[endId]);
+
+        log += QString("\nПолная стоимость пути: %1\n").arg(distances[endId]);
         exitDist = distances[endId];
     }
     else
     {
-        log += "\nПуть не найден!";
+        log += "СТАТУС: Путь не существует!\n";
+        exitDist = -1;
+        exitPath = "Путь не найден";
     }
+    log += QString("==================================================\n");
 
     return {path, log};
 }

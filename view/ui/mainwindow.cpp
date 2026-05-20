@@ -106,6 +106,7 @@ void MainWindow::setupTipsConnections()
     connect(view, &GraphView::nodeSelected, this, &MainWindow::onNodeSelected);
     connect(view, &GraphView::edgeSelected, this, &MainWindow::onEdgeSelected);
     connect(view, &GraphView::deselected, this, &MainWindow::onDeselected);
+    connect(view, &GraphView::pathHighlighted, this, &MainWindow::onHighlighted);
 }
 
 //Обработка выбора узла
@@ -136,4 +137,11 @@ void MainWindow::onDeselected()
     tipsLabel->showNothingSelected();
     sidebarPanel->showNothingSelected();
 }
+
+void MainWindow::onHighlighted()
+{
+    tipsLabel->showHighlighted();
+    sidebarPanel->showNothingSelected();
+}
+
 

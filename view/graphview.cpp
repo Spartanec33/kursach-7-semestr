@@ -38,8 +38,7 @@ QLineF GraphView::applyEdgeOffset(QPointF start, QPointF end)
     return line;
 }
 
-// Отрисовать стрелку
-void GraphView::drawArrow(QLineF line, bool isSelected)
+void GraphView::drawArrow(QLineF line, bool isSelected, double weight)
 {
     // Вычисляем угол линии
     double angle = atan2(line.dy(), -line.dx());
@@ -62,9 +61,32 @@ void GraphView::drawArrow(QLineF line, bool isSelected)
     QPolygonF arrowHead;
     arrowHead << arrowBase << arrowP1 << arrowP2;
 
-    QBrush brush = (isSelected) ? QBrush(selectedArrowColor()) : QBrush(arrowColor()); // Цвет в зависимости от выделенности
+    QBrush brush = (isSelected) ? QBrush(selectedArrowColor()) : QBrush(arrowColor());
+
     // Добавляем стрелку на сцену
-    scene->addPolygon(arrowHead,QPen(edgeColor(), edgeWidth()), brush);
+    scene->addPolygon(arrowHead, QPen(edgeColor(), edgeWidth()), brush);
+
+    // Отрисовка веса ребра
+    // Создаем текстовый элемент
+    auto* text = scene->addText(QString::number(weight));
+    text->setDefaultTextColor(isSelected ? selectedEdgeColor() : edgeColor());
+    text->setFont(QFont("Arial", textSize() - 2)); // Сделаем шрифт чуть меньше узлов
+
+    // Вычисляем перпендикуляр к линии, чтобы отодвинуть текст вбок
+    QPointF direction = line.p2() - line.p1();
+    QPointF perpendicular(-direction.y(), direction.x());
+
+    double length = sqrt(perpendicular.x() * perpendicular.x() + perpendicular.y() * perpendicular.y());
+    if (length > 0)
+        perpendicular /= length; // Нормализуем
+
+    // Сдвигаем текст на 15 пикселей вбок от центра стрелки
+    QPointF textCenter = arrowBase + perpendicular * 15;
+
+    // Центрируем bounding box текста относительно вычисленной точки
+    QRectF textRect = text->boundingRect();
+    text->setPos(textCenter.x() - textRect.width() / 2,
+                 textCenter.y() - textRect.height() / 2);
 }
 
 // Отрисовать ребра
@@ -78,15 +100,25 @@ void GraphView::drawEdges()
         auto sourceNode = graph->getNodes().at(edge->getSourceId()).get();
         auto targetNode = graph->getNodes().at(edge->getTargetId()).get();
 
-        QLineF line = applyEdgeOffset(sourceNode->getPosition(),  targetNode->getPosition());
+        QLineF line = applyEdgeOffset(sourceNode->getPosition(), targetNode->getPosition());
         edge->setLine(line);
+
         QColor color = (id == selectedEdgeId) ? selectedEdgeColor() : edgeColor();
-        scene->addLine(line, QPen(color, edgeWidth()));
-        drawArrow(line, id == selectedEdgeId);
+
+        // Сохраняем указатель на созданную линию
+        QGraphicsLineItem* lineItem = scene->addLine(line, QPen(color, edgeWidth()));
+
+        // Привязываем ID ребра к этой линии
+        // Используем ключ 0 для ID самого ребра.
+        // Также запишем ID начального и конечного узлов в ключи 1 и 2
+        lineItem->setData(0, id);
+        lineItem->setData(1, edge->getSourceId());
+        lineItem->setData(2, edge->getTargetId());
+
+        // 3. Рисуем стрелку и вес
+        drawArrow(line, id == selectedEdgeId, edge->getData().weight);
     }
 }
-
-
 
 // Отрисовать текст в узле
 void GraphView::drawNodeText(QPointF center, QString name)
@@ -107,7 +139,20 @@ void GraphView::drawNodes()
     {
         QPointF center = node->getPosition();
         QBrush brush = (id == selectedNodeId) ? QBrush(selectedNodeColor()) : QBrush(nodeColor()); // Цвет в зависимости от выделенности
-        scene->addEllipse(center.x() - nodeSize(), center.y() - nodeSize(), nodeSize()*2, nodeSize()*2, QPen(borderColor(), edgeWidth()), brush);
+
+        //Сохраняем указатель на созданный эллипс
+        QGraphicsEllipseItem* ellipse = scene->addEllipse(
+            center.x() - nodeSize(),
+            center.y() - nodeSize(),
+            nodeSize() * 2,
+            nodeSize() * 2,
+            QPen(borderColor(), edgeWidth()),
+            brush
+        );
+
+        //привязываем ID узла к этому графическому элементу
+        ellipse->setData(0, id);
+
         drawNodeText(center, node->getData().name);
     }
 }
@@ -128,6 +173,65 @@ void GraphView::deselectAll()
     selectedNodeId = -1;
     selectedEdgeId = -1;
     emit deselected();
+}
+
+//Подсветить путь
+void GraphView::highlightPath(const vector<int> &path)
+{
+    deselectAll();
+    drawGraph();
+    if (path.empty()) return;
+
+    // Создаем множества для быстрого поиска ID, входящих в путь
+    set<int> pathNodes(path.begin(), path.end());
+
+    // Создаем пары (sourceId, targetId) для ребер, входящих в путь
+    set<pair<int, int>> pathEdges;
+    for (size_t i = 0; i < path.size() - 1; ++i)
+    {
+        pathEdges.insert({path[i], path[i+1]});
+    }
+
+    // Проходим по всем элементам на сцене
+    for (QGraphicsItem* item : scene->items())
+    {
+        // 1. Если это узел
+        if (auto* ellipse = dynamic_cast<QGraphicsEllipseItem*>(item))
+        {
+            QVariant nodeData = ellipse->data(0);
+            if (nodeData.isValid())
+            {
+                int nodeId = nodeData.toInt();
+                if (pathNodes.count(nodeId))
+                {
+                    ellipse->setPen(borderColor());
+                    ellipse->setBrush(selectedNodeColor());
+                }
+            }
+        }
+
+        // 2. Если это ребро
+        if (auto* lineItem = dynamic_cast<QGraphicsLineItem*>(item))
+        {
+            QVariant srcData = lineItem->data(1);
+            QVariant dstData = lineItem->data(2);
+
+            if (srcData.isValid() && dstData.isValid())
+            {
+                int srcId = srcData.toInt();
+                int dstId = dstData.toInt();
+
+                // Проверяем, входит ли эта направленная пара в путь
+                if (pathEdges.count({srcId, dstId}))
+                {
+                    lineItem->setPen(QPen(selectedEdgeColor(), edgeWidth()));
+                }
+            }
+        }
+    }
+
+    isHighlighted = true;
+    emit pathHighlighted();
 }
 
 //Поиск узла в точке
@@ -232,6 +336,15 @@ void GraphView::handleRightClick(int clickedNodeId)
 //Обработка нажатия мышью
 void GraphView::mousePressEvent(QMouseEvent* event)
 {
+    //Сброс подсветки если была
+    if(isHighlighted)
+    {
+        isHighlighted = false;
+        deselectAll();
+        drawGraph();
+        return;
+    }
+
     QPointF scenePos = mapToScene(event->pos());
     int clickedNodeId = findNodeAt(scenePos);
     int clickedEdgeId = findEdgeAt(scenePos);
